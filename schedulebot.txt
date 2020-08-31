@@ -1,0 +1,6 @@
+@schedulebot create -1 name : [link] -2 [link] -3 [link] -4 [link]
+@schedulebot modify -[block] [link]
+@schedulebot delete -[block] / -all
+@schedulebot list
+@schedulebot now
+@schedulebot link -[block]
