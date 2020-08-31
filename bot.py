@@ -82,7 +82,8 @@ class MyClient(discord.Client):
             return
         if self.user not in message.mentions:
             return
-        userdata = get_user_data(get_data(),message.author.id)
+        print(str(message.author.id))
+        userdata = get_user_data(get_data(),str(message.author.id))
         messagecapitalization = [x.strip() for x in messagecapitalization.replace("<@!749979907282436166>","").split("-")]
         themessage = [x.strip() for x in themessage.replace("<@!749979907282436166>","").split("-")]
         if themessage[0] == "create":
@@ -91,7 +92,7 @@ class MyClient(discord.Client):
                 userdata['names'][x[0]] = x[2:].split("@")[0].strip()
                 userdata['links'][x[0]] = x[2:].split("@")[1].strip()
             change_data(change_user_data(get_data(),userdata))
-            await message.channel.send(f"Schedule created for {userdata['user']}")    
+            await message.channel.send(f"Schedule created for {message.author.mention}")    
         if themessage[0] == "modify":
             messagecapitalization.pop(0)
             for x in messagecapitalization:
@@ -99,10 +100,10 @@ class MyClient(discord.Client):
                 userdata['names'][x[0]] = x[2:].split("@")[0].strip()
                 userdata['links'][x[0]] = x[2:].split("@")[1].strip()
             change_data(change_user_data(get_data(),userdata))
-            await message.channel.send(f"Schedule modified for {userdata['user']}")
+            await message.channel.send(f"Schedule modified for {message.author.mention}")
         if themessage[0] == "delete":
             delete_user_data(get_data(),userdata)
-            await message.channel.send(f"Schedule deleted for {userdata['user']}")
+            await message.channel.send(f"Schedule deleted for {message.author.mention}")
         if themessage[0] == "list":
             listembed = discord.Embed(title = f"**Schedule for {message.author.name}**", description = f"**Block 1:** [{userdata['names']['1']}]({userdata['links']['1']})\n**Block 2:** [{userdata['names']['2']}]({userdata['links']['2']})\n**Block 3:** [{userdata['names']['3']}]({userdata['links']['3']})\n**Block 4:** [{userdata['names']['4']}]({userdata['links']['4']})")
             await message.channel.send(embed=listembed)              
