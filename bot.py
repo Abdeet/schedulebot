@@ -82,7 +82,6 @@ class MyClient(discord.Client):
             return
         if self.user not in message.mentions:
             return
-        print(str(message.author.id))
         userdata = get_user_data(get_data(),str(message.author.id))
         messagecapitalization = [x.strip() for x in messagecapitalization.replace("<@!749979907282436166>","").split("-")]
         themessage = [x.strip() for x in themessage.replace("<@!749979907282436166>","").split("-")]
@@ -96,7 +95,6 @@ class MyClient(discord.Client):
         if themessage[0] == "modify":
             messagecapitalization.pop(0)
             for x in messagecapitalization:
-                print(x)
                 userdata['names'][x[0]] = x[2:].split("@")[0].strip()
                 userdata['links'][x[0]] = x[2:].split("@")[1].strip()
             change_data(change_user_data(get_data(),userdata))
@@ -234,7 +232,7 @@ class MyClient(discord.Client):
                     elif minute > 5 and minute <= 45:
                         period = "4"
             if period == "0":
-                await message.channel.send(f"{userdata['user']}, you do not have any classes right now")
+                await message.channel.send(f"{message.author.mention}, you do not have any classes right now")
             else:
                 nowembed = discord.Embed(title = f"**Class right now for {message.author.name}**", description = f"[{userdata['names'][period]}]({userdata['links'][period]})")
                 await message.channel.send(embed = nowembed)
