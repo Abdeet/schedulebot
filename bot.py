@@ -31,12 +31,12 @@ import calendar
 FILE_PATH = os.path.dirname(os.path.abspath( __file__ ))
 
 def get_secret():
-    with open(FILE_PATH + "\secret.txt", "r+") as secret_txt:
+    with open(FILE_PATH + "/secret.txt", "r+") as secret_txt:
         secret = secret_txt.readlines()[0]
         return secret
 
 def get_data():
-    with open(FILE_PATH + "\data.txt", "r+") as data_txt:
+    with open(FILE_PATH + "/data.txt", "r+") as data_txt:
         data = data_txt.readlines()
         return [json.loads(x) for x in data]
 
@@ -61,7 +61,7 @@ def delete_user_data(datalist, user_data):
     change_data(datalist)
 
 def change_data(changed_list):
-    with open(FILE_PATH + "\data.txt", "w+") as data_txt:
+    with open(FILE_PATH + "/data.txt", "w+") as data_txt:
         changed_list = [json.dumps(x) for x in changed_list]
         data_txt.writelines(changed_list)
 
