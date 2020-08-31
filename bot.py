@@ -62,7 +62,7 @@ def delete_user_data(datalist, user_data):
 
 def change_data(changed_list):
     with open(FILE_PATH + "/data.txt", "w+") as data_txt:
-        changed_list = [json.dumps(x) for x in changed_list]
+        changed_list = [json.dumps(x) + "\n" for x in changed_list]
         data_txt.writelines(changed_list)
 
 def create_empty_object(user_mention):
