@@ -82,7 +82,7 @@ class MyClient(discord.Client):
             return
         if self.user not in message.mentions:
             return
-        userdata = get_user_data(get_data(),str(message.author.mention))
+        userdata = get_user_data(get_data(),message.author.mention)
         messagecapitalization = [x.strip() for x in messagecapitalization.replace("<@!749979907282436166>","").split("-")]
         themessage = [x.strip() for x in themessage.replace("<@!749979907282436166>","").split("-")]
         if themessage[0] == "create":
