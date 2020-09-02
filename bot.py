@@ -5,6 +5,7 @@ import io
 import json
 import datetime
 import calendar
+import re
 
 """
 {
@@ -68,6 +69,11 @@ def change_data(changed_list):
 def create_empty_object(user_mention):
     return {"user" : user_mention, "names" : {"1" : "nothing", "2" : "nothing", "3" : "nothing", "4" : "nothing"}, "links" : {"1" : "fortnite.com", "2" : "epicgames.com", "3" : "bing.com", "4" : "netscape.com"}}
  
+def get_mentioned_roles(message):
+    roles = re.findall(r"<@&[0-9]+>",message)
+    roles = [role.replace("!","").replace("&","").replace("@","").strip("<").strip(">") for role in roles]
+    return roles
+
 class MyClient(discord.Client): 
     async def on_ready(self):
         print('Schedulebot Up')
@@ -80,11 +86,25 @@ class MyClient(discord.Client):
         themessage = message.content.lower()
         if message.author.id == self.user.id:
             return
-        if self.user not in message.mentions:
-            return
+        mentions = [str(mention.id) for mention in message.mentions]
+        mentions = [x.replace("!","").replace("&","").replace("@","").strip("<").strip(">") for x in mentions]
+        roles = get_mentioned_roles(message.content)
+        if str(self.user.id) not in mentions:
+            yes = False
+            for role in message.guild.get_member(self.user.id).roles:
+                print(str(role.id))
+                if str(role.id) in roles:
+                    messagecapitalization = messagecapitalization.replace(f"<@&{str(role.id)}>","").replace(f"<@{str(role.id)}>","").replace(f"<@!{str(role.id)}>","")
+                    themessage = themessage.replace(f"<@&{str(role.id)}>","").replace(f"<@{str(role.id)}>","").replace(f"<@!{str(role.id)}>","")
+                    yes = True
+                    break
+            if not yes:
+                return
         userdata = get_user_data(get_data(),str(message.author.id))
-        messagecapitalization = [x.strip() for x in messagecapitalization.replace("<@!749979907282436166>","").split("-")]
-        themessage = [x.strip() for x in themessage.replace("<@!749979907282436166>","").split("-")]
+        print(userdata)
+        print(messagecapitalization)
+        messagecapitalization = [x.strip() for x in messagecapitalization.replace("<@!749979907282436166>","").replace("<@749979907282436166>","").replace("<@&749979907282436166>","").split("-")]
+        themessage = [x.strip() for x in themessage.replace("<@!749979907282436166>","").replace("<@749979907282436166>","").replace("<@&749979907282436166>","").split("-")]
         if themessage[0] == "create":
             messagecapitalization.pop(0)
             for x in messagecapitalization:
