@@ -107,7 +107,10 @@ class MyClient(discord.Client):
             if not yes:
                 return
         userdata = get_user_data(get_data(),str(message.author.id))
-        ib = userdata['ib']
+        try:
+            ib = userdata['ib']
+        except:
+            ib = 0
         messagecapitalization = [x.strip() for x in messagecapitalization.replace("<@!749979907282436166>","").replace("<@749979907282436166>","").replace("<@&749979907282436166>","").split("-")]
         themessage = [x.strip() for x in themessage.replace("<@!749979907282436166>","").replace("<@749979907282436166>","").replace("<@&749979907282436166>","").split("-")]
         if "create" in themessage[0]:
@@ -116,9 +119,9 @@ class MyClient(discord.Client):
                 userdata['names'][x[0]] = x[2:].split("@")[0].strip()
                 userdata['links'][x[0]] = x[2:].split("@")[1].strip()
             if len(userdata['names']) > 4:
-                userdata['ib'] = True
+                userdata['ib'] = 1
             else:
-                userdata['ib'] = False
+                userdata['ib'] = 0
             change_data(change_user_data(get_data(),userdata))
             await message.channel.send(f"Schedule created for {message.author.mention}")    
         if "modify" in themessage[0]:
@@ -127,18 +130,18 @@ class MyClient(discord.Client):
                 userdata['names'][x[0]] = x[2:].split("@")[0].strip()
                 userdata['links'][x[0]] = x[2:].split("@")[1].strip()
             if len(userdata['names']) > 4:
-                userdata['ib'] = True
+                userdata['ib'] = 1
             else:
-                userdata['ib'] = False
+                userdata['ib'] = 0
             change_data(change_user_data(get_data(),userdata))
             await message.channel.send(f"Schedule modified for {message.author.mention}")
         if "delete" in themessage[0]:
             delete_user_data(get_data(),userdata)
             await message.channel.send(f"Schedule deleted for {message.author.mention}")
         if "list" in themessage[0]:
-            if not ib:
+            if not int(ib):
                 listembed = discord.Embed(title = f"**Schedule for {message.author.name}**", description = f"**Block 1:** [{userdata['names']['1']}]({userdata['links']['1']})\n**Block 2:** [{userdata['names']['2']}]({userdata['links']['2']})\n**Block 3:** [{userdata['names']['3']}]({userdata['links']['3']})\n**Block 4:** [{userdata['names']['4']}]({userdata['links']['4']})")
-            elif ib:
+            elif int(ib):
                 listembed = discord.Embed(title = f"**Schedule for {message.author.name}**", description = f"**Block 1:** [{userdata['names']['1']}]({userdata['links']['1']})\n**Block 2:** [{userdata['names']['2']}]({userdata['links']['2']})\n**Block 3:** [{userdata['names']['3']}]({userdata['links']['3']})\n**Block 4:** [{userdata['names']['4']}]({userdata['links']['4']})\n**Block 5:** [{userdata['names']['5']}]({userdata['links']['5']})\n**Block 6:** [{userdata['names']['6']}]({userdata['links']['6']})\n**Block 7:** [{userdata['names']['7']}]({userdata['links']['7']})")
             await message.channel.send(embed=listembed)              
         if "now" in themessage[0]:
@@ -147,7 +150,7 @@ class MyClient(discord.Client):
             minute = int(time.strftime("%M"))
             weekday = time.weekday()
             period = '0'
-            if not ib:
+            if not int(ib):
                 if weekday == 0:
                     if hour == 8:
                         period = "1"
@@ -268,7 +271,7 @@ class MyClient(discord.Client):
                             period = "3"
                         elif minute > 5 and minute <= 45:
                             period = "4"
-            if ib:
+            elif int(ib):
                 period == "8"
             if period == "0":
                 await message.channel.send(f"{message.author.mention}, you do not have any classes right now")
