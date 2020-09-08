@@ -6,6 +6,7 @@ import json
 import datetime
 import calendar
 import re
+import math
 
 """
 {
@@ -145,7 +146,12 @@ class MyClient(discord.Client):
                 listembed = discord.Embed(title = f"**Schedule for {message.author.name}**", description = f"**Block 1:** [{userdata['names']['1']}]({userdata['links']['1']})\n**Block 2:** [{userdata['names']['2']}]({userdata['links']['2']})\n**Block 3:** [{userdata['names']['3']}]({userdata['links']['3']})\n**Block 4:** [{userdata['names']['4']}]({userdata['links']['4']})\n**Block 5:** [{userdata['names']['5']}]({userdata['links']['5']})\n**Block 6:** [{userdata['names']['6']}]({userdata['links']['6']})\n**Block 7:** [{userdata['names']['7']}]({userdata['links']['7']})")
             await message.channel.send(embed=listembed)              
         if "now" in themessage[0]:
+            d202098 = datetime.datetime.date(2020,9,8)
             time = datetime.datetime.now()
+            date = time.date()
+            week_diff = math.floor(date - d202098.days / 7) % 2
+            a_week = 0
+            b_week = 1
             hour = int(time.strftime("%H"))
             minute = int(time.strftime("%M"))
             weekday = time.weekday()
@@ -272,7 +278,171 @@ class MyClient(discord.Client):
                         elif minute > 5 and minute <= 45:
                             period = "4"
             elif int(ib):
-                period == "8"
+                if weekday == 0:
+                    if hour == 8:
+                        period = "1"
+                    elif hour == 9:
+                        if minute <= 50:
+                            period = "1"
+                        elif minute > 50:
+                            period = "2"
+                    elif hour == 10:
+                        period = "2"
+                    elif hour == 11:
+                        if minute <= 20:
+                            period = "2"
+                        elif minute > 20:
+                            if week_diff == a_week:
+                                period = "1"
+                            elif week_diff == b_week:
+                                period = "5"
+                    elif hour == 12:
+                        if minute == 0:
+                            if week_diff == a_week:
+                                period = "1"
+                            elif week_diff == b_week:
+                                period = "5"
+                        elif minute > 20:
+                            period = "3"
+                    elif hour == 13:
+                        if minute <= 5:
+                            period = "3"
+                        elif minute > 5 and minute <= 45:
+                            period = "4"
+                if weekday == 1:
+                    if hour == 8:
+                        period = "3"
+                    elif hour == 9:
+                        if minute <= 50:
+                            period = "3"
+                        elif minute > 50:
+                            period = "4"
+                    elif hour == 10:
+                        period = "4"
+                    elif hour == 11:
+                        if minute <= 20:
+                            period = "4"
+                        elif minute > 20:
+                            if week_diff == a_week:
+                                period = "2"
+                            elif week_diff == b_week:
+                                period = "6"
+                    elif hour == 12:
+                        if minute == 0:
+                            if week_diff == a_week:
+                                period = "2"
+                            elif week_diff == b_week:
+                                period = "6"
+                        elif minute > 20:
+                            period = "1"
+                    elif hour == 13:
+                        if minute <= 5:
+                            period = "1"
+                        elif minute > 5 and minute <= 45:
+                            period = "2"
+                if weekday == 3:
+                    if hour == 8:
+                        period = "5"
+                    elif hour == 9:
+                        if minute <= 50:
+                            period = "5"
+                        elif minute > 50:
+                            period = "6"
+                    elif hour == 10:
+                        period = "6"
+                    elif hour == 11:
+                        if minute <= 20:
+                            period = "6"
+                        elif minute > 20:
+                            if week_diff == a_week:
+                                period = "3"
+                            elif week_diff == b_week:
+                                period = "7"
+                    elif hour == 12:
+                        if minute == 0:
+                            if week_diff == a_week:
+                                period = "3"
+                            elif week_diff == b_week:
+                                period = "7"
+                        elif minute > 20:
+                            period = "7"
+                    elif hour == 13:
+                        if minute <= 5:
+                            period = "7"
+                        elif minute > 5 and minute <= 45:
+                            period = "4"
+                if weekday == 4:
+                    if hour == 8:
+                        period = "7"
+                    elif hour == 9:
+                        if minute <= 50:
+                            period = "7"
+                        elif minute > 50:
+                            period = "4"
+                    elif hour == 10:
+                        period = "4"
+                    elif hour == 11:
+                        if minute <= 20:
+                            period = "4"
+                        elif minute > 20:
+                            if week_diff == a_week:
+                                period = "4"
+                            elif week_diff == b_week:
+                                period = "4"
+                    elif hour == 12:
+                        if minute == 0:
+                            if week_diff == a_week:
+                                period = "4"
+                            elif week_diff == b_week:
+                                period = "4"
+                        elif minute > 20:
+                            period = "5"
+                    elif hour == 13:
+                        if minute <= 5:
+                            period = "5"
+                        elif minute > 5 and minute <= 45:
+                            period = "6"
+                if weekday == 2:
+                    if week_diff == a_week:
+                        if hour == 9:
+                            if minute > 50:
+                                period = "1"
+                        elif hour == 10:
+                            if minute <= 35:
+                                period = "1"
+                            elif minute > 35:
+                                period = "2"
+                        elif hour == 11:
+                            if minute <= 20:
+                                period = "2"
+                        elif hour == 12:
+                            if minute > 20:
+                                period = "3"
+                        elif hour == 13:
+                            if minute <= 5:
+                                period = "3"
+                            elif minute > 5 and minute <= 45:
+                                period = "4"
+                    elif week_diff == b_week:
+                        if hour == 9:
+                            if minute > 50:
+                                period = "5"
+                        elif hour == 10:
+                            if minute <= 35:
+                                period = "5"
+                            elif minute > 35:
+                                period = "6"
+                        elif hour == 11:
+                            if minute <= 20:
+                                period = "6"
+                        elif hour == 12:
+                            if minute > 20:
+                                period = "7"
+                        elif hour == 13:
+                            if minute <= 5:
+                                period = "7"
+                            elif minute > 5 and minute <= 45:
+                                period = "4"
             if period == "0":
                 await message.channel.send(f"{message.author.mention}, you do not have any classes right now")
             elif period == "8":
