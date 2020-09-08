@@ -149,7 +149,7 @@ class MyClient(discord.Client):
             d202098 = datetime.date(2020,9,8)
             time = datetime.datetime.now()
             date = time.date()
-            week_diff = math.floor(date - d202098.days / 7) % 2
+            week_diff = math.floor((date - d202098).days / 7) % 2
             a_week = 0
             b_week = 1
             hour = int(time.strftime("%H"))
