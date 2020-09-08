@@ -461,7 +461,7 @@ class MyClient(discord.Client):
                 message.guild.get_role(687996857653264393) : discord.PermissionOverwrite(read_messages=True, send_messages=True)
             }
             for person in people:
-                    overwrites_object[person] = discord.PermissionOverwrite(read_messages=True,send_messages=True)
+                    overwrites_object[person] = discord.PermissionOverwrite(read_messages=True,send_messages=True, manage_channel=True)
             await message.guild.create_text_channel(channel_name, overwrites = overwrites_object,category = custom_rooms)
 
 client = MyClient()
