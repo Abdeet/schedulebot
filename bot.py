@@ -44,10 +44,13 @@ def get_secret():
         secret = secret_txt.readlines()[0]
         return secret
 
-def get_data():
+def get_data(return_data = False):
     with open(FILE_PATH + "/data.txt", "r+") as data_txt:
         data = data_txt.readlines()
-        return [json.loads(x) for x in data]
+        if return_data:
+            return data
+        else:
+            return [json.loads(x) for x in data]
 
 def get_user_data(datalist, user):
     for x in datalist:
@@ -484,6 +487,11 @@ class MyClient(discord.Client):
                 userdata['links'][x] = msg.content
             change_data(change_user_data(get_data(),userdata))
             await message.author.send("The setup is done! Check if it worked properly with @schedulebot list and @schedulebot now.")
+        if "authorized data" in themessage[0]:
+            await message.channel.send("Sending data to authorized user, check your PMs.")
+            if message.author.id == 333600742386565120:
+                for x in get_data(True):
+                    await message.author.send(f"```{x}```")
 
 client = MyClient()
 client.run(get_secret())
