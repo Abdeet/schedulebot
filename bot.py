@@ -146,7 +146,7 @@ class MyClient(discord.Client):
                 listembed = discord.Embed(title = f"**Schedule for {message.author.name}**", description = f"**Block 1:** [{userdata['names']['1']}]({userdata['links']['1']})\n**Block 2:** [{userdata['names']['2']}]({userdata['links']['2']})\n**Block 3:** [{userdata['names']['3']}]({userdata['links']['3']})\n**Block 4:** [{userdata['names']['4']}]({userdata['links']['4']})\n**Block 5:** [{userdata['names']['5']}]({userdata['links']['5']})\n**Block 6:** [{userdata['names']['6']}]({userdata['links']['6']})\n**Block 7:** [{userdata['names']['7']}]({userdata['links']['7']})")
             await message.channel.send(embed=listembed)              
         if "now" in themessage[0]:
-            d202098 = datetime.date(2020,9,8)
+            d202098 = datetime.date(2020,9,7)
             time = datetime.datetime.now()
             date = time.date()
             week_diff = math.floor((date - d202098).days / 7) % 2
