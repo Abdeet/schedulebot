@@ -33,9 +33,55 @@ import math
 }
 """
 
+class Schedule:
+    def __init__(self,user,blocks):
+        self.user = int(user)
+        self.blocks = blocks
+        self.update_ib()
 
+    def update_ib(self):
+        if len(self.blocks) == 7:
+            self.ib = 1
+        else:
+            self.ib = 0
+    
+    def __dict__(self):
+        self.update_ib()
+        return_dict = {"user": self.user, "ib" : self.ib, "blocks" : []}
+        for block in self.blocks:
+            return_dict["blocks"].append(block.__dict__())
+        return return_dict
 
+    def get_block_index(self, num):
+        for block in self.blocks:
+            if int(block.num) == int(num):
+                return self.blocks.index(block)
+        return None
 
+    def get_block(self, num):
+        index = self.get_block_index(int(num))
+        if index is not None:
+            return self.blocks[index]
+        return None
+
+    def change_block(self, num, name, link):
+        index = self.get_block_index(num)
+        if index is not None:
+            self.blocks[index].num = int(num)
+            self.blocks[index].name = name
+            self.blocks[index].link = link
+        else:
+            self.blocks.append(Block(num, name, link))
+        self.update_ib()
+
+class Block:
+    def __init__(self,num, name, link):
+        self.num = num
+        self.name = name
+        self.link = link
+    
+    def __dict__(self):
+        return {"num": self.num, "name": self.name, "link": self.link}
 
 FILE_PATH = os.path.dirname(os.path.abspath( __file__ ))
 
@@ -55,20 +101,20 @@ def get_data(return_data = False):
 def get_user_data(datalist, user):
     for x in datalist:
         if x['user'] == user:
-            return x
+            return convert_dict_to_object(x)
     return create_empty_object(user)
 
 def change_user_data(datalist, user_data):
     for x in datalist:
-        if x['user'] == user_data['user']:
-            datalist[datalist.index(x)] = user_data
+        if x['user'] == user_data.user:
+            datalist[datalist.index(x)] = convert_object_to_dict(user_data)
             return datalist
-    datalist.append(user_data)
+    datalist.append(convert_object_to_dict(user_data))
     return datalist
 
 def delete_user_data(datalist, user_data):
     for x in datalist:
-        if x['user'] == user_data['user']:
+        if x['user'] == user_data.user:
             datalist.pop(datalist.index(x))
     change_data(datalist)
 
@@ -77,13 +123,43 @@ def change_data(changed_list):
         changed_list = [json.dumps(x) + "\n" for x in changed_list]
         data_txt.writelines(changed_list)
 
-def create_empty_object(user_mention):
-    return {"user" : user_mention,"ib" : False, "names" : {"1" : "nothing", "2" : "nothing", "3" : "nothing", "4" : "nothing"}, "links" : {"1" : "fortnite.com", "2" : "epicgames.com", "3" : "bing.com", "4" : "netscape.com"}}
- 
+def create_empty_object(user_mention, ib = False):
+    if not ib:
+        return Schedule(user_mention,[Block(1, 'nothing', 'http://example.com'),Block(2, 'nothing', 'http://example.com'),Block(3, 'nothing', 'http://example.com'),Block(4, 'nothing', 'http://example.com')])
+    else:
+        return Schedule(user_mention,[Block(1, 'nothing', 'http://example.com'),Block(2, 'nothing', 'http://example.com'),Block(3, 'nothing', 'http://example.com'),Block(4, 'nothing', 'http://example.com'),Block(5, 'nothing', 'http://example.com'),Block(6, 'nothing', 'http://example.com'),Block(7, 'nothing', 'http://example.com')])
+
+
 def get_mentioned_roles(message):
     roles = re.findall(r"<@&[0-9]+>",message)
     roles = [role.replace("!","").replace("&","").replace("@","").strip("<").strip(">") for role in roles]
     return roles
+
+def convert_dict_to_object(dict):
+    classes = []
+    for x in dict['blocks']:
+        classes.append(Block(x['num'],x['name'],x['link']))
+    schedule = Schedule(dict['user'],classes)
+    return schedule
+
+def convert_object_to_dict(schedule):
+    new_dict = {
+        "user": schedule.user,
+        "ib": schedule.ib,
+        "blocks": [
+
+        ]
+    }
+    for x in schedule.blocks:
+        new_dict['blocks'].append({"num": x.num, "name": x.name, "link": x.link})
+    return new_dict
+
+def convert_legacy_dict_to_object(legacy_dict):
+    classes = []
+    for x in range(1,len(legacy_dict['names'])+1):
+        classes.append(Block(x,legacy_dict['names'][str(x)],legacy_dict['links'][str(x)]))
+    schedule = Schedule(legacy_dict['user'],classes)
+    return schedule
 
 def nowfunction(ib):
     d202098 = datetime.date(2020,9,7)
@@ -400,6 +476,10 @@ class MyClient(discord.Client):
         mentions = [str(mention.id) for mention in message.mentions]
         mentions = [x.replace("!","").replace("&","").replace("@","").strip("<").strip(">") for x in mentions]
         roles = get_mentioned_roles(message.content)
+        #if "testschedulebot" not in themessage:
+            #return
+        #if message.author.id != 333600742386565120:
+            #eturn
         if str(self.user.id) not in mentions:
             yes = False
             for role in message.guild.get_member(self.user.id).roles:
@@ -410,55 +490,47 @@ class MyClient(discord.Client):
                     break
             if not yes:
                 return
+        
         userdata = get_user_data(get_data(),str(message.author.id))
-        try:
-            ib = userdata['ib']
-        except:
-            ib = 0
+        ib = userdata.ib
         messagecapitalization = [x.strip() for x in messagecapitalization.replace("<@!749979907282436166>","").replace("<@749979907282436166>","").replace("<@&749979907282436166>","").split("-")]
         themessage = [x.strip() for x in themessage.replace("<@!749979907282436166>","").replace("<@749979907282436166>","").replace("<@&749979907282436166>","").split("-")]
         if "create" in themessage[0]:
             messagecapitalization.pop(0)
             for x in messagecapitalization:
-                userdata['names'][x[0]] = x[2:].split("@")[0].strip()
-                userdata['links'][x[0]] = x[2:].split("@")[1].strip()
-            if len(userdata['names']) > 4:
-                userdata['ib'] = 1
-            else:
-                userdata['ib'] = 0
+                userdata.change_block(x[0], x[2:].split("@")[0].strip(), x[2:].split("@")[1].strip())
             change_data(change_user_data(get_data(),userdata))
             await message.channel.send(f"Schedule created for {message.author.mention}")    
         if "modify" in themessage[0]:
             messagecapitalization.pop(0)
             for x in messagecapitalization:
-                userdata['names'][x[0]] = x[2:].split("@")[0].strip()
-                userdata['links'][x[0]] = x[2:].split("@")[1].strip()
-            if len(userdata['names']) > 4:
-                userdata['ib'] = 1
-            else:
-                userdata['ib'] = 0
+                userdata.change_block(x[0], x[2:].split("@")[0].strip(), x[2:].split("@")[1].strip())
             change_data(change_user_data(get_data(),userdata))
             await message.channel.send(f"Schedule modified for {message.author.mention}")
         if "delete" in themessage[0]:
             delete_user_data(get_data(),userdata)
             await message.channel.send(f"Schedule deleted for {message.author.mention}")
         if "list" in themessage[0]:
-            if not int(ib):
-                listembed = discord.Embed(title = f"**Schedule for {message.author.name}**", description = f"**Block 1:** [{userdata['names']['1']}]({userdata['links']['1']})\n**Block 2:** [{userdata['names']['2']}]({userdata['links']['2']})\n**Block 3:** [{userdata['names']['3']}]({userdata['links']['3']})\n**Block 4:** [{userdata['names']['4']}]({userdata['links']['4']})")
-            elif int(ib):
-                listembed = discord.Embed(title = f"**Schedule for {message.author.name}**", description = f"**Block 1:** [{userdata['names']['1']}]({userdata['links']['1']})\n**Block 2:** [{userdata['names']['2']}]({userdata['links']['2']})\n**Block 3:** [{userdata['names']['3']}]({userdata['links']['3']})\n**Block 4:** [{userdata['names']['4']}]({userdata['links']['4']})\n**Block 5:** [{userdata['names']['5']}]({userdata['links']['5']})\n**Block 6:** [{userdata['names']['6']}]({userdata['links']['6']})\n**Block 7:** [{userdata['names']['7']}]({userdata['links']['7']})")
+            description = f""
+            for x in range(1, 8 if ib else 5):
+                block = userdata.get_block(x)
+                description = description + f"**Block {block.num}:** [{block.name}]({block.link})\n"
+            listembed = discord.Embed(title = f"**Schedule for {message.author.name}**", description = description)
             await message.channel.send(embed=listembed)              
         if "now" in themessage[0]:
             period = nowfunction(ib)
             if period == "0":
-                await message.channel.send(f"{message.author.mention}, you do not have any classes right now")
+                await message.channel.send(f"{message.author.name}, you do not have any classes right now")
             elif period == "8":
-                await message.channel.send(f"{message.author.mention}, we do not have IB now functionality yet. For now please use list instead. @abdeet if you have a copy of the schedule so abhi can implement now")
+                await message.channel.send(f"{message.author.name}, we do not have IB now functionality yet. For now please use list instead. @abdeet if you have a copy of the schedule so abhi can implement now")
             else:
-                nowembed = discord.Embed(title = f"**Class right now for {message.author.name}**", description = f"[{userdata['names'][period]}]({userdata['links'][period]})")
+                block = userdata.get_block(period)
+                nowembed = discord.Embed(title = f"**Class right now for {message.author.name}**", description = f"[{block.name}]({block.link})")
                 await message.channel.send(embed = nowembed)
-        if themessage[0] == "info":
+        if "info" in themessage[0]:
             await message.channel.send("**Schedulebot by Abdeet**\n\nSchedulebot allows you to keep track of your classes and meeting links by doing all the remembering stuff for you.\n\nCommands:\n**setup** - Recommended for new users\n**setup ib** - Recommended for new ib users\ncreate - create a new schedule [discouraged, but still supported]\nmodify - modify your schedule\ndelete - delete your schedule\nlist - list your schedule\nnow - check what class you have now\n\nThe syntax to use these commands is @schedulebot \{command\} [parameters if necessary]\n\nThat's all there is to it and if you have a question or there is a bug message <@333600742386565120>")
+        if "github" in themessage[0]:
+            await message.channel.send("Schedulebot has a GitHub repository!\nhttps://github.com/Abdeet/schedulebot")
         if "meeting" in themessage[0]:
             custom_rooms = message.guild.get_channel(752942661018845273)
             people = message.mentions
@@ -474,17 +546,21 @@ class MyClient(discord.Client):
         if "setup" in themessage[0]:
             await message.channel.send("Check your private messages for a message from me to continue setup. If you don't see one, make sure you have messages from strangers turned on in settings.")
             ib = "ib" in themessage[0]
-            userdata['ib'] = int(ib)
+            if ib:
+                userdata = create_empty_object(userdata.user,True)
+            else:
+                userdata = create_empty_object(userdata.user)
             def checkreply(m):
                 return m.author == message.author ##and lowermessage == 'yes'
             await message.author.send("Welcome to the guided schedule creator. Just follow the steps and you will be done in no time.")
             for x in range(1,8 if ib else 5):
                 await message.author.send(f"What do you have for block {x}? You can name this something descriptive, like World History with Hontz.")
                 msg = await client.wait_for('message', check = checkreply, timeout=60.0)
-                userdata['names'][x] = msg.content
+                name = msg.content
                 await message.author.send(f"What is your Google Meet link for block {x}? Make sure this has the https:// at the start.")
                 msg = await client.wait_for('message', check = checkreply, timeout=60.0)
-                userdata['links'][x] = msg.content
+                link = msg.content
+                userdata.change_block(x,name,link)
             change_data(change_user_data(get_data(),userdata))
             await message.author.send("The setup is done! Check if it worked properly with @schedulebot list and @schedulebot now.")
         if "authorized data" in themessage[0]:
