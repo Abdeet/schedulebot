@@ -481,17 +481,18 @@ class MyClient(discord.Client):
             #return
         #if message.author.id != 333600742386565120:
             #eturn
-        try:
-            if str(self.user.id) not in mentions:
-                yes = False
-                for role in message.guild.get_member(self.user.id).roles:
-                    if str(role.id) in roles:
-                        messagecapitalization = messagecapitalization.replace(f"<@&{str(role.id)}>","").replace(f"<@{str(role.id)}>","").replace(f"<@!{str(role.id)}>","")
-                        themessage = themessage.replace(f"<@&{str(role.id)}>","").replace(f"<@{str(role.id)}>","").replace(f"<@!{str(role.id)}>","")
-                        yes = True
-                        break
-                if not yes:
-                    return
+        except:
+            roles = []
+        if str(self.user.id) not in mentions:
+            yes = False
+            for role in message.guild.get_member(self.user.id).roles:
+                if str(role.id) in roles:
+                    messagecapitalization = messagecapitalization.replace(f"<@&{str(role.id)}>","").replace(f"<@{str(role.id)}>","").replace(f"<@!{str(role.id)}>","")
+                    themessage = themessage.replace(f"<@&{str(role.id)}>","").replace(f"<@{str(role.id)}>","").replace(f"<@!{str(role.id)}>","")
+                    yes = True
+                    break
+            if not yes:
+                return
         
         userdata = get_user_data(get_data(),str(message.author.id))
         ib = userdata.ib
