@@ -475,21 +475,23 @@ class MyClient(discord.Client):
             return
         mentions = [str(mention.id) for mention in message.mentions]
         mentions = [x.replace("!","").replace("&","").replace("@","").strip("<").strip(">") for x in mentions]
-        roles = get_mentioned_roles(message.content)
+        try:
+            roles = get_mentioned_roles(message.content)
         #if "testschedulebot" not in themessage:
             #return
         #if message.author.id != 333600742386565120:
             #eturn
-        if str(self.user.id) not in mentions:
-            yes = False
-            for role in message.guild.get_member(self.user.id).roles:
-                if str(role.id) in roles:
-                    messagecapitalization = messagecapitalization.replace(f"<@&{str(role.id)}>","").replace(f"<@{str(role.id)}>","").replace(f"<@!{str(role.id)}>","")
-                    themessage = themessage.replace(f"<@&{str(role.id)}>","").replace(f"<@{str(role.id)}>","").replace(f"<@!{str(role.id)}>","")
-                    yes = True
-                    break
-            if not yes:
-                return
+        try:
+            if str(self.user.id) not in mentions:
+                yes = False
+                for role in message.guild.get_member(self.user.id).roles:
+                    if str(role.id) in roles:
+                        messagecapitalization = messagecapitalization.replace(f"<@&{str(role.id)}>","").replace(f"<@{str(role.id)}>","").replace(f"<@!{str(role.id)}>","")
+                        themessage = themessage.replace(f"<@&{str(role.id)}>","").replace(f"<@{str(role.id)}>","").replace(f"<@!{str(role.id)}>","")
+                        yes = True
+                        break
+                if not yes:
+                    return
         
         userdata = get_user_data(get_data(),str(message.author.id))
         ib = userdata.ib
