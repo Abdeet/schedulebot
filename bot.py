@@ -515,17 +515,17 @@ class MyClient(discord.Client):
             for x in range(1, 8 if ib else 5):
                 block = userdata.get_block(x)
                 description = description + f"**Block {block.num}:** [{block.name}]({block.link})\n"
-            listembed = discord.Embed(title = f"**Schedule for {message.author.nick}**", description = description)
+            listembed = discord.Embed(title = f"**Schedule for {message.author.nick if message.author.nick is not None else message.author.name}**", description = description)
             await message.channel.send(embed=listembed)              
         if "now" in themessage[0]:
             period = nowfunction(ib)
             if period == "0":
-                await message.channel.send(f"{message.author.nick}, you do not have any classes right now")
+                await message.channel.send(f"{message.author.nick if message.author.nick is not None else message.author.name}, you do not have any classes right now")
             elif period == "8":
-                await message.channel.send(f"{message.author.nick}, we do not have IB now functionality yet. For now please use list instead. @abdeet if you have a copy of the schedule so abhi can implement now")
+                await message.channel.send(f"{mmessage.author.nick if message.author.nick is not None else message.author.name}, we do not have IB now functionality yet. For now please use list instead. @abdeet if you have a copy of the schedule so abhi can implement now")
             else:
                 block = userdata.get_block(period)
-                nowembed = discord.Embed(title = f"**Class right now for {message.author.nick}**", description = f"[{block.name}]({block.link})")
+                nowembed = discord.Embed(title = f"**Class right now for {message.author.nick if message.author.nick is not None else message.author.name}**", description = f"[{block.name}]({block.link})")
                 await message.channel.send(embed = nowembed)
         if "setup" in themessage[0]:
             await message.channel.send("Check your private messages for a message from me to continue setup. If you don't see one, make sure you have messages from strangers turned on in settings.")
