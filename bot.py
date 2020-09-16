@@ -475,14 +475,11 @@ class MyClient(discord.Client):
             return
         mentions = [str(mention.id) for mention in message.mentions]
         mentions = [x.replace("!","").replace("&","").replace("@","").strip("<").strip(">") for x in mentions]
-        try:
-            roles = get_mentioned_roles(message.content)
+        roles = get_mentioned_roles(message.content)
         #if "testschedulebot" not in themessage:
             #return
         #if message.author.id != 333600742386565120:
-            #eturn
-        except:
-            roles = []
+            #return
         if str(self.user.id) not in mentions:
             yes = False
             for role in message.guild.get_member(self.user.id).roles:
@@ -518,34 +515,18 @@ class MyClient(discord.Client):
             for x in range(1, 8 if ib else 5):
                 block = userdata.get_block(x)
                 description = description + f"**Block {block.num}:** [{block.name}]({block.link})\n"
-            listembed = discord.Embed(title = f"**Schedule for {message.author.name}**", description = description)
+            listembed = discord.Embed(title = f"**Schedule for {message.author.nick}**", description = description)
             await message.channel.send(embed=listembed)              
         if "now" in themessage[0]:
             period = nowfunction(ib)
             if period == "0":
-                await message.channel.send(f"{message.author.name}, you do not have any classes right now")
+                await message.channel.send(f"{message.author.nick}, you do not have any classes right now")
             elif period == "8":
-                await message.channel.send(f"{message.author.name}, we do not have IB now functionality yet. For now please use list instead. @abdeet if you have a copy of the schedule so abhi can implement now")
+                await message.channel.send(f"{message.author.nick}, we do not have IB now functionality yet. For now please use list instead. @abdeet if you have a copy of the schedule so abhi can implement now")
             else:
                 block = userdata.get_block(period)
-                nowembed = discord.Embed(title = f"**Class right now for {message.author.name}**", description = f"[{block.name}]({block.link})")
+                nowembed = discord.Embed(title = f"**Class right now for {message.author.nick}**", description = f"[{block.name}]({block.link})")
                 await message.channel.send(embed = nowembed)
-        if "info" in themessage[0]:
-            await message.channel.send("**Schedulebot by Abdeet**\n\nSchedulebot allows you to keep track of your classes and meeting links by doing all the remembering stuff for you.\n\nCommands:\n**setup** - Recommended for new users\n**setup ib** - Recommended for new ib users\ncreate - create a new schedule [discouraged, but still supported]\nmodify - modify your schedule\ndelete - delete your schedule\nlist - list your schedule\nnow - check what class you have now\n\nThe syntax to use these commands is @schedulebot \{command\} [parameters if necessary]\n\nThat's all there is to it and if you have a question or there is a bug message <@333600742386565120>")
-        if "github" in themessage[0]:
-            await message.channel.send("Schedulebot has a GitHub repository!\nhttps://github.com/Abdeet/schedulebot")
-        if "meeting" in themessage[0]:
-            custom_rooms = message.guild.get_channel(752942661018845273)
-            people = message.mentions
-            channel_name = messagecapitalization[1]
-            overwrites_object = {
-                message.guild.default_role : discord.PermissionOverwrite(read_messages=False, send_messages = False),
-                message.guild.get_role(687996857653264393) : discord.PermissionOverwrite(read_messages=True, send_messages=True)
-            }
-            for person in people:
-                    overwrites_object[person] = discord.PermissionOverwrite(read_messages=True,send_messages=True, manage_channels=True)
-            await message.guild.create_text_channel(channel_name, overwrites = overwrites_object,category = custom_rooms)
-            await message.channel.send(f"Meeting room {channel_name} created")
         if "setup" in themessage[0]:
             await message.channel.send("Check your private messages for a message from me to continue setup. If you don't see one, make sure you have messages from strangers turned on in settings.")
             ib = "ib" in themessage[0]
@@ -571,6 +552,24 @@ class MyClient(discord.Client):
             if message.author.id == 333600742386565120:
                 for x in get_data(True):
                     await message.author.send(f"```{x}```")
+        if "info" in themessage[0]:
+            await message.channel.send("**Schedulebot by Abdeet**\n\nSchedulebot allows you to keep track of your classes and meeting links by doing all the remembering stuff for you.\n\nCommands:\n**setup** - Recommended for new users\n**setup ib** - Recommended for new ib users\ncreate - create a new schedule [discouraged, but still supported]\nmodify - modify your schedule\ndelete - delete your schedule\nlist - list your schedule\nnow - check what class you have now\n\nThe syntax to use these commands is @schedulebot \{command\} [parameters if necessary]\n\nThat's all there is to it and if you have a question or there is a bug message <@333600742386565120>")
+        if "github" in themessage[0]:
+            await message.channel.send("Schedulebot has a GitHub repository!\nhttps://github.com/Abdeet/schedulebot")
+        if "meeting" in themessage[0]:
+            custom_rooms = message.guild.get_channel(752942661018845273)
+            people = message.mentions
+            other_people = [person for role in roles for person in message.guild.get_role(int(role)).members]
+            people = people + list(set(other_people) - set(people))
+            channel_name = messagecapitalization[1]
+            overwrites_object = {
+                message.guild.default_role : discord.PermissionOverwrite(read_messages=False, send_messages = False),
+                message.guild.get_role(687996857653264393) : discord.PermissionOverwrite(read_messages=True, send_messages=True)
+            }
+            for person in people:
+                    overwrites_object[person] = discord.PermissionOverwrite(read_messages=True,send_messages=True, manage_channels=True)
+            await message.guild.create_text_channel(channel_name, overwrites = overwrites_object,category = custom_rooms)
+            await message.channel.send(f"Meeting room {channel_name} created")
 
 client = MyClient()
 client.run(get_secret())
