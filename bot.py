@@ -34,9 +34,12 @@ import math
 """
 
 class Schedule:
-    def __init__(self,user,blocks):
+    def __init__(self,user,blocks, clubs = None):
         self.user = int(user)
         self.blocks = blocks
+        if clubs == None:
+            self.clubs = [Block(1, "Nothing", "None"),Block(2, "Nothing", "None"),Block(3, "Nothing", "None"),Block(4, "Nothing", "None")]
+        else: self.clubs = clubs
         self.update_ib()
 
     def update_ib(self):
@@ -47,31 +50,53 @@ class Schedule:
     
     def __dict__(self):
         self.update_ib()
-        return_dict = {"user": self.user, "ib" : self.ib, "blocks" : []}
+        return_dict = {"user": self.user, "ib" : self.ib, "blocks" : [], "clubs": []}
         for block in self.blocks:
+            return_dict["blocks"].append(block.__dict__())
+        for club in self.clubs:
             return_dict["blocks"].append(block.__dict__())
         return return_dict
 
-    def get_block_index(self, num):
-        for block in self.blocks:
-            if int(block.num) == int(num):
-                return self.blocks.index(block)
-        return None
-
-    def get_block(self, num):
-        index = self.get_block_index(int(num))
-        if index is not None:
-            return self.blocks[index]
-        return None
-
-    def change_block(self, num, name, link):
-        index = self.get_block_index(num)
-        if index is not None:
-            self.blocks[index].num = int(num)
-            self.blocks[index].name = name
-            self.blocks[index].link = link
+    def get_block_index(self, num, club = False):
+        if club:
+            for club in self.clubs:
+                if int(club.num) == int(num):
+                    return self.clubs.index(club)
         else:
-            self.blocks.append(Block(num, name, link))
+            for block in self.blocks:
+                if int(block.num) == int(num):
+                    return self.blocks.index(block)
+        return None
+
+    def get_block(self, num, club = False):
+        index = self.get_block_index(int(num), club)
+        if index is not None:
+            if club:
+                return self.clubs[index]
+            else:
+                return self.blocks[index]
+        return None
+
+    def change_block(self, num, name, link, club = False):
+        index = self.get_block_index(num, club)
+        if index is not None:
+            if club:
+                self.clubs[index].num = int(num)
+                self.clubs[index].name = name
+                self.clubs[index].link = link
+                return self.clubs[index].__dict__()
+            else:
+                self.blocks[index].num = int(num)
+                self.blocks[index].name = name
+                self.blocks[index].link = link
+                return self.blocks[index].__dict__()
+        else:
+            if club:
+                self.clubs.append(Block(num,name,link))
+                return self.clubs[-1].__dict__()
+            else:
+                self.blocks.append(Block(num, name, link))
+                return self.clubs[-1].__dict__()
         self.update_ib()
 
 class Block:
@@ -136,10 +161,16 @@ def get_mentioned_roles(message):
     return roles
 
 def convert_dict_to_object(dict):
-    classes = []
+    blocks = []
+    clubs = []
     for x in dict['blocks']:
-        classes.append(Block(x['num'],x['name'],x['link']))
-    schedule = Schedule(dict['user'],classes)
+        blocks.append(Block(x['num'],x['name'],x['link']))
+    try:
+        for x in dict['clubs']:
+                clubs.append(Block(x['num'],x['name'],x['link']))
+    except:
+        clubs = None
+    schedule = Schedule(dict['user'],blocks, clubs)
     return schedule
 
 def convert_object_to_dict(schedule):
@@ -148,10 +179,15 @@ def convert_object_to_dict(schedule):
         "ib": schedule.ib,
         "blocks": [
 
+        ],
+        "clubs": [
+            
         ]
     }
     for x in schedule.blocks:
-        new_dict['blocks'].append({"num": x.num, "name": x.name, "link": x.link})
+        new_dict['blocks'].append(x.__dict__())
+    for x in schedule.clubs:
+        new_dict['clubs'].append(x.__dict__())
     return new_dict
 
 def convert_legacy_dict_to_object(legacy_dict):
@@ -495,65 +531,134 @@ class MyClient(discord.Client):
         ib = userdata.ib
         messagecapitalization = [x.strip() for x in messagecapitalization.replace("<@!749979907282436166>","").replace("<@749979907282436166>","").replace("<@&749979907282436166>","").split("-")]
         themessage = [x.strip() for x in themessage.replace("<@!749979907282436166>","").replace("<@749979907282436166>","").replace("<@&749979907282436166>","").split("-")]
-        if "create" in themessage[0]:
+        if themessage[0] == "create":
             messagecapitalization.pop(0)
             for x in messagecapitalization:
                 userdata.change_block(x[0], x[2:].split("@")[0].strip(), x[2:].split("@")[1].strip())
             change_data(change_user_data(get_data(),userdata))
             await message.channel.send(f"Schedule created for {message.author.mention}")    
-        if "modify" in themessage[0]:
+        if themessage[0] == "modify":
             messagecapitalization.pop(0)
             for x in messagecapitalization:
                 userdata.change_block(x[0], x[2:].split("@")[0].strip(), x[2:].split("@")[1].strip())
             change_data(change_user_data(get_data(),userdata))
             await message.channel.send(f"Schedule modified for {message.author.mention}")
-        if "delete" in themessage[0]:
+        if themessage[0] == "delete":
             delete_user_data(get_data(),userdata)
             await message.channel.send(f"Schedule deleted for {message.author.mention}")
         if "list" in themessage[0]:
             description = f""
-            for x in range(1, 8 if ib else 5):
-                block = userdata.get_block(x)
-                description = description + f"**Block {block.num}:** [{block.name}]({block.link})\n"
-            listembed = discord.Embed(title = f"**Schedule for {message.author.nick if message.author.nick is not None else message.author.name}**", description = description)
+            clubs = "club" in themessage[0]
+            if clubs:
+                for x in range(1,5):
+                    club = userdata.get_block(x, True)
+                    description = description + f"**Club {club.num}:** [{club.name}]({club.link})\n"
+            else:
+                for x in range(1, 8 if ib else 5):
+                    block = userdata.get_block(x)
+                    description = description + f"**Block {block.num}:** [{block.name}]({block.link})\n"
+            try:
+                listembed = discord.Embed(title = f"**Schedule for {message.author.nick if message.author.nick is not None else message.author.name}**", description = description)
+            except AttributeError:
+                listembed = discord.Embed(title = f"**Schedule for {message.author.name}**", description = description)
             await message.channel.send(embed=listembed)              
-        if "now" in themessage[0]:
+        if themessage[0] == "now":
             period = nowfunction(ib)
             if period == "0":
-                await message.channel.send(f"{message.author.nick if message.author.nick is not None else message.author.name}, you do not have any classes right now")
+                await message.channel.send(f"{message.author.mention if message.author.mention is not None else message.author.name}, you do not have any classes right now")
             elif period == "8":
-                await message.channel.send(f"{mmessage.author.nick if message.author.nick is not None else message.author.name}, we do not have IB now functionality yet. For now please use list instead. @abdeet if you have a copy of the schedule so abhi can implement now")
+                await message.channel.send(f"{message.author.mention if message.author.mention is not None else message.author.name}, we do not have IB now functionality yet. For now please use list instead. @abdeet if you have a copy of the schedule so abhi can implement now")
             else:
-                block = userdata.get_block(period)
-                nowembed = discord.Embed(title = f"**Class right now for {message.author.nick if message.author.nick is not None else message.author.name}**", description = f"[{block.name}]({block.link})")
+                club = "club" in themessage[0]
+                if club:
+                    club = userdata.get_block(period, True)
+                    try:
+                        nowembed = discord.Embed(title = f"**Club right now for {message.author.nick if message.author.nick is not None else message.author.name}**", description = f"[{club.name}]({club.link})")
+                    except AttributeError:
+                        nowembed = discord.Embed(title = f"**Club right now for {message.author.name}**", description = f"[{club.name}]({club.link})")                        
+                else:
+                    block = userdata.get_block(period)
+                    try:
+                        nowembed = discord.Embed(title = f"**Class right now for {message.author.nick if message.author.nick is not None else message.author.name}**", description = f"[{block.name}]({block.link})")
+                    except AttributeError:
+                        nowembed = discord.Embed(title = f"**Class right now for {message.author.name}**", description = f"[{block.name}]({block.link})")
                 await message.channel.send(embed = nowembed)
         if "setup" in themessage[0]:
             await message.channel.send("Check your private messages for a message from me to continue setup. If you don't see one, make sure you have messages from strangers turned on in settings.")
-            ib = "ib" in themessage[0]
-            if ib:
-                userdata = create_empty_object(userdata.user,True)
-            else:
-                userdata = create_empty_object(userdata.user)
             def checkreply(m):
                 return m.author == message.author ##and lowermessage == 'yes'
-            await message.author.send("Welcome to the guided schedule creator. Just follow the steps and you will be done in no time.")
-            for x in range(1,8 if ib else 5):
-                await message.author.send(f"What do you have for block {x}? You can name this something descriptive, like World History with Hontz.")
-                msg = await client.wait_for('message', check = checkreply, timeout=60.0)
-                name = msg.content
-                await message.author.send(f"What is your Google Meet link for block {x}? Make sure this has the https:// at the start.")
-                msg = await client.wait_for('message', check = checkreply, timeout=60.0)
-                link = msg.content
-                userdata.change_block(x,name,link)
+            club = "club" in themessage[0]
+            if club:
+                await message.author.send("Welcome to the club schedule creator. Answer these questions to setup your club links.")
+                for x in range(1,5):
+                    await message.author.send(f"Do you have a club during block {x}? If you do, what is the name? If you do not, reply with `no`. You have two minutes to reply.")
+                    msg = await client.wait_for('message', check = checkreply, timeout = 120.0)
+                    if msg.content.lower() == "no":
+                        name = "Nothing"
+                        link = "None"
+                    else:
+                        name = msg.content
+                        await message.author.send(f"What is the Google Meet link for your club during block {x}? Make sure this has the `https://` at the start. You have two minutes to reply.")
+                        msg = await client.wait_for('message', check = checkreply, timeout = 120.0)
+                        link = msg.content
+                change_data(change_user_data(get_data(),userdata))
+                await message.author.send("The setup is done! Check if it worked properly with @schedulebot list and @schedulebot now.")
+            else:
+                ib = "ib" in themessage[0]
+                if ib:
+                    userdata = create_empty_object(userdata.user,True)
+                else:
+                    userdata = create_empty_object(userdata.user)
+
+                await message.author.send("Welcome to the guided schedule creator. Just follow the steps and you will be done in no time.")
+                for x in range(1,8 if ib else 5):
+                    await message.author.send(f"What do you have for block {x}? You can name this something descriptive, like `World History with Hontz`. You have two minutes to reply.")
+                    msg = await client.wait_for('message', check = checkreply, timeout=120.0)
+                    name = msg.content
+                    await message.author.send(f"What is your Google Meet link for block {x}? Make sure this has the `https://` at the start. You have two minutes to reply.")
+                    msg = await client.wait_for('message', check = checkreply, timeout=120.0)
+                    link = msg.content
+                    userdata.change_block(x,name,link)
+                change_data(change_user_data(get_data(),userdata))
+                await message.author.send("The setup is done! Check if it worked properly with @schedulebot list and @schedulebot now.")
+        if "change" in themessage[0]:
+            await message.channel.send("Check your private messages for a message from me to continue setup. If you don't see one, make sure you have messages from strangers turned on in settings.")
+            def checkreply(m):
+                return m.author == message.author ##and lowermessage == 'yes'
+            while True:
+                await message.author.send("What block do you want to change? Example: `4`. If it is a club, write club in front. Example: `club 2`. You have two minutes to reply.")
+                msg = await client.wait_for('message', check = checkreply, timeout=120.0)
+                club = "club" in msg.content
+                int_msg = msg.content.replace("club", "").strip()
+                try:
+                    num = int(int_msg)
+                except:
+                    num = None
+                if num is not None:
+                    block = userdata.get_block(num, club)
+                    if block:
+                        await message.author.send(f"What do you want to change the name of {'club' if club else 'block'} {num} to? You have two minutes to reply.")
+                        msg = await client.wait_for('message', check = checkreply, timeout=120.0)
+                        name = msg.content
+                        await message.author.send(f"What do you want to change the Google Meet link for {'club' if club else 'block'} {num} to? Make sure this has the `https://` at the start. You have two minutes to reply.")
+                        msg = await client.wait_for('message', check = checkreply, timeout=120.0)
+                        link = msg.content
+                        userdata.change_block(num, name, link, club)
+                        await message.author.send(f"Changed {'club' if club else 'block'} {num}!")
+                        await message.author.send(f"Do you want to change any more blocks/clubs? Reply with `yes` if you do, and with anything else if you don't. You have two minutes to reply.")
+                        msg = await client.wait_for('message', check = checkreply, timeout=120.0)
+                        affirmative = True if msg.content.lower() == "yes" else False
+                        if not affirmative:
+                            break
             change_data(change_user_data(get_data(),userdata))
-            await message.author.send("The setup is done! Check if it worked properly with @schedulebot list and @schedulebot now.")
+            await message.author.send("Your schedule has been changed! Check if it worked properly with @schedulebot list and @schedulebot now.")
         if "authorized data" in themessage[0]:
             await message.channel.send("Sending data to authorized user, check your PMs.")
             if message.author.id == 333600742386565120:
-                for x in get_data(True):
-                    await message.author.send(f"```{x}```")
-        if "info" in themessage[0]:
-            await message.channel.send("**Schedulebot by Abdeet**\n\nSchedulebot allows you to keep track of your classes and meeting links by doing all the remembering stuff for you.\n\nCommands:\n**setup** - Recommended for new users\n**setup ib** - Recommended for new ib users\ncreate - create a new schedule [discouraged, but still supported]\nmodify - modify your schedule\ndelete - delete your schedule\nlist - list your schedule\nnow - check what class you have now\n\nThe syntax to use these commands is @schedulebot \{command\} [parameters if necessary]\n\nThat's all there is to it and if you have a question or there is a bug message <@333600742386565120>")
+                data_list = json.dumps([x for x in get_data(True)])
+                await message.author.send(f"```{data_list}```")
+        if "info" in themessage[0] or "help" in themessage[0]:
+            await message.channel.send("**Schedulebot by Abdeet**\n\nSchedulebot allows you to keep track of your classes and meeting links by doing all the remembering stuff for you.\n\nCommands:\n**'setup'** - Recommended for new users\n**'setup ib'** - Recommended for new ib users\n**'setup clubs'** - Setup your clubs\n**'change'** - Change parts of your schedule\n'create [-block name@link]' - Create a new schedule [discouraged, but still supported]\n'modify [-block name@link]' - Modify your schedule [discouraged, but still supported]\n**'delete'** - Delete your schedule\n**'list'** - List your schedule\n**'now'** - Check what class you have now\n**'info'** or **'help'** - See all of the Schedulebot commands and how to use them\n'github' - Get the Github link for the code\n'meeting [@users and @roles] -[name]' - Create a private channel for a meeting [don't use if you don't understand]\nThe syntax to use these commands is @schedulebot \{command\} [parameters if necessary]\n\nThat's all there is to it and if you have a question or there is a bug message <@333600742386565120>")
         if "github" in themessage[0]:
             await message.channel.send("Schedulebot has a GitHub repository!\nhttps://github.com/Abdeet/schedulebot")
         if "meeting" in themessage[0]:
