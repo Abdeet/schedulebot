@@ -216,28 +216,28 @@ def nowfunction(ib):
         if weekday == 3:
             if hour == 13:
                 if minute > 35:
-                    return 9
+                    period = "9"
             elif hour == 14:
                 if minute <= 30:
-                    return 9
+                    period = "9"
                 elif minute > 30:
-                    return 10
+                    period = "10"
             elif hour == 15:
                 if minute <= 30:
-                    return 10
+                    period = "10"
         if weekday == 3:
             if hour == 13:
                 if minute > 35:
-                    return 11
+                    period = "11"
             elif hour == 14:
                 if minute <= 30:
-                    return 11
+                    period = "11"
                 elif minute > 30:
-                    return 12
+                    period = "12"
             elif hour == 15:
                 if minute <= 30:
-                    return 12
-    if int(ib):
+                    period = "12"
+    elif int(ib):
         if weekday == 0:
             if hour == 8:
                 period = "1"
@@ -598,8 +598,8 @@ class MyClient(discord.Client):
             elif period == "8":
                 await message.channel.send(f"{message.author.mention if message.author.mention is not None else message.author.name}, we do not have IB now functionality yet. For now please use list instead. @abdeet if you have a copy of the schedule so abhi can implement now")
             else:
-                if period > 8:
-                    period -= 8
+                if int(period) > 8:
+                    period = str(int(period) - 8)
                     club = userdata.get_block(period, True)
                     try:
                         nowembed = discord.Embed(title = f"**Club right now for {message.author.nick if message.author.nick is not None else message.author.name}**", description = f"[{club.name}]({club.link})")
