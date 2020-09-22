@@ -603,7 +603,7 @@ class MyClient(discord.Client):
                         link = msg.content
                         userdata.change_block(x, name, link, club)
                 change_data(change_user_data(get_data(),userdata))
-                await message.author.send("The setup is done! Check if it worked properly with @schedulebot list and @schedulebot now.")
+                await message.author.send("The setup is done! Check if it worked properly with @schedulebot list clubs and @schedulebot now club.")
             else:
                 ib = "ib" in themessage[0]
                 if ib:
@@ -652,14 +652,14 @@ class MyClient(discord.Client):
                         if not affirmative:
                             break
             change_data(change_user_data(get_data(),userdata))
-            await message.author.send("Your schedule has been changed! Check if it worked properly with @schedulebot list and @schedulebot now.")
+            await message.author.send("Your schedule has been changed! Check if it worked properly with @schedulebot list clubs and @schedulebot now club.")
         if "authorized data" in themessage[0]:
             await message.channel.send("Sending data to authorized user, check your PMs.")
             if message.author.id == 333600742386565120:
                 data_list = json.dumps([x for x in get_data(True)])
                 await message.author.send(f"```{data_list}```")
         if "info" in themessage[0] or "help" in themessage[0]:
-            await message.channel.send("**Schedulebot by Abdeet**\n\nSchedulebot allows you to keep track of your classes and meeting links by doing all the remembering stuff for you.\n\nCommands:\n**'setup'** - Recommended for new users\n**'setup ib'** - Recommended for new ib users\n**'setup clubs'** - Setup your clubs\n**'change'** - Change parts of your schedule\n'create [-block name@link]' - Create a new schedule [discouraged, but still supported]\n'modify [-block name@link]' - Modify your schedule [discouraged, but still supported]\n**'delete'** - Delete your schedule\n**'list'** - List your schedule\n**'now'** - Check what class you have now\n**'info'** or **'help'** - See all of the Schedulebot commands and how to use them\n'github' - Get the Github link for the code\n'meeting [@users and @roles] -[name]' - Create a private channel for a meeting [don't use if you don't understand]\nThe syntax to use these commands is @schedulebot \{command\} [parameters if necessary]\n\nThat's all there is to it and if you have a question or there is a bug message <@333600742386565120>")
+            await message.channel.send("**Schedulebot by Abdeet**\n\nSchedulebot allows you to keep track of your classes and meeting links by doing all the remembering stuff for you.\n\nCommands:\n**`setup`** - Recommended for new users\n**`setup ib`** - Recommended for new ib users\n**`setup clubs`** - Setup your clubs\n**`change`** - Change parts of your schedule\n`create [-block name@link]` - Create a new schedule [discouraged, but still supported]\n`modify [-block name@link]` - Modify your schedule [discouraged, but still supported]\n**`delete`** - Delete your schedule\n**`list [clubs]`** - List your schedule\n**`now [club]`** - Check what class you have now\n**`info`** or **`help`** - See all of the Schedulebot commands and how to use them\n`github` - Get the Github link for the code\n`meeting [@users and @roles] -[name]` - Create a private channel for a meeting [don't use if you don't understand]\nThe syntax to use these commands is @schedulebot \{command\} [parameters if necessary]\n\nThat's all there is to it and if you have a question or there is a bug message <@333600742386565120>")
         if "github" in themessage[0]:
             await message.channel.send("Schedulebot has a GitHub repository!\nhttps://github.com/Abdeet/schedulebot")
         if "meeting" in themessage[0]:
