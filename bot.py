@@ -562,7 +562,7 @@ class MyClient(discord.Client):
             except AttributeError:
                 listembed = discord.Embed(title = f"**Schedule for {message.author.name}**", description = description)
             await message.channel.send(embed=listembed)              
-        if themessage[0] == "now":
+        if "now" in themessage[0]:
             period = nowfunction(ib)
             if period == "0":
                 await message.channel.send(f"{message.author.mention if message.author.mention is not None else message.author.name}, you do not have any classes right now")
