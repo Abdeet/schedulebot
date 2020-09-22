@@ -601,6 +601,7 @@ class MyClient(discord.Client):
                         await message.author.send(f"What is the Google Meet link for your club during block {x}? Make sure this has the `https://` at the start. You have two minutes to reply.")
                         msg = await client.wait_for('message', check = checkreply, timeout = 120.0)
                         link = msg.content
+                        userdata.change_block(x, name, link, club)
                 change_data(change_user_data(get_data(),userdata))
                 await message.author.send("The setup is done! Check if it worked properly with @schedulebot list and @schedulebot now.")
             else:
