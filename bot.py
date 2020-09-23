@@ -766,10 +766,12 @@ class MyClient(discord.Client):
                 data_list = json.dumps([x for x in get_data(True)])
                 await message.author.send(f"```{data_list}```")
         if "info" in themessage[0] or "help" in themessage[0]:
-            await message.channel.send("**Schedulebot by Abdeet**\n\nSchedulebot allows you to keep track of your classes and meeting links by doing all the remembering stuff for you.\n\nCommands:\n**`setup`** - Recommended for new users\n**`setup ib`** - Recommended for new ib users\n**`setup clubs`** - Setup your clubs\n**`change`** - Change parts of your schedule\n`create [-block name@link]` - Create a new schedule [discouraged, but still supported]\n`modify [-block name@link]` - Modify your schedule [discouraged, but still supported]\n**`delete`** - Delete your schedule\n**`list [clubs]`** - List your classes/clubs\n**`schedule`** - See your schedule for today\n**`now`** - Check what class you have now\n**`info`** or **`help`** - See all of the Schedulebot commands and how to use them\n`github` - Get the Github link for the code\n`meeting [@users and @roles] -[name]` - Create a private channel for a meeting [don't use if you don't understand]\nThe syntax to use these commands is `@schedulebot {command} [parameters if necessary]`\n\nThat's all there is to it and if you have a question or there is a bug message <@333600742386565120>")
+            await message.channel.send("**Schedulebot by Abdeet**\n\nSchedulebot allows you to keep track of your classes and meeting links by doing all the remembering stuff for you.\n\nCommands:\n**`setup`** - Recommended for new users\n**`setup ib`** - Recommended for new ib users\n**`setup clubs`** - Setup your clubs\n**`change`** - Change parts of your schedule\n`create [-block name@link]` - Create a new schedule [discouraged, but still supported]\n`modify [-block name@link]` - Modify your schedule [discouraged, but still supported]\n**`delete`** - Delete your schedule\n**`list [clubs]`** - List your classes/clubs\n**`schedule`** - See your schedule for today\n**`now`** - Check what class you have now\n**`info`** or **`help`** - See all of the Schedulebot commands and how to use them\n`github` - Get the Github link for the code\n`invite` - Invite the bot to your server\nThe syntax to use these commands is `@schedulebot {command} [parameters if necessary]`\n\nThat's all there is to it and if you have a question or there is a bug message <333600742386565120>")
         if "github" in themessage[0]:
             await message.channel.send("Schedulebot has a GitHub repository!\nhttps://github.com/Abdeet/schedulebot")
-        if "meeting" in themessage[0]:
+        if "invite" in themessage[0]:
+            await message.channel.send("To invite Schedulebot to your channel use this link: https://discord.com/api/oauth2/authorize?client_id=749979907282436166&permissions=256000&scope=bot")
+        """ if "meeting" in themessage[0]:
             custom_rooms = message.guild.get_channel(752942661018845273)
             people = message.mentions
             other_people = [person for role in roles for person in message.guild.get_role(int(role)).members]
@@ -782,7 +784,7 @@ class MyClient(discord.Client):
             for person in people:
                     overwrites_object[person] = discord.PermissionOverwrite(read_messages=True,send_messages=True, manage_channels=True)
             await message.guild.create_text_channel(channel_name, overwrites = overwrites_object,category = custom_rooms)
-            await message.channel.send(f"Meeting room {channel_name} created")
+            await message.channel.send(f"Meeting room {channel_name} created") """
 
 client = MyClient()
 client.run(get_secret())
