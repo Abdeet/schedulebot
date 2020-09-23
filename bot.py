@@ -197,6 +197,18 @@ def convert_legacy_dict_to_object(legacy_dict):
     schedule = Schedule(legacy_dict['user'],classes)
     return schedule
 
+def is_club_day(day, month, which = False):
+    club_days = {9: [24,25], 10: [22,23], 11: [19,20], 12: [17,18], 2: [26], 3: [26], 4: [23]}
+    club_day = day in club_days[month]
+    if which is False:
+        return (club_day, 0)
+    else:
+        if day == club_days[month][0]:
+            return (club_day, 3)
+        elif day == club_days[month][1]:
+            return (club_day, 4)
+        else: return (club_day, 0)
+
 def nowfunction(ib):
     d202098 = datetime.date(2020,9,7)
     time = datetime.datetime.now()
@@ -209,8 +221,7 @@ def nowfunction(ib):
     weekday = time.weekday()
     day = time.day
     month = time.month
-    club_days = {9: [24,25], 10: [22,23], 11: [19,20], 12: [17,18], 2: [26], 3: [26], 4: [23]}
-    club_day = day in club_days[month]
+    club_day = is_club_day(day, month)
     period = '0'
     if club_day:
         if weekday == 3:
@@ -526,6 +537,69 @@ def nowfunction(ib):
                     period = "4"
     return period
 
+def display_schedule(user, userdata):
+    schedules = {
+        "day_template" : {
+            0 : ["8:30 - 9:50", "10:00 - 11:20", "11:30 - 12:00 (check in)", "12:00 - 12:30", "12:30 - 1:05 (support)", "1:10 - 1:45 (support)"],
+            1 : ["8:30 - 9:50", "10:00 - 11:20", "11:30 - 12:00 (check in)", "12:00 - 12:30", "12:30 - 1:05 (support)", "1:10 - 1:45 (support)"],
+            2 : ["10:00 - 10:35", "10:40 - 11:15", "12:00 - 12:30", "12:30 - 1:05", "1:10 - 1:45"],
+            3 : ["8:30 - 9:50", "10:00 - 11:20", "11:30 - 12:00 (check in)", "12:00 - 12:30", "12:30 - 1:05 (support)", "1:10 - 1:45 (support)"],
+            4 : ["8:30 - 9:50", "10:00 - 11:20", "11:30 - 12:00 (check in)", "12:00 - 12:30", "12:30 - 1:05 (support)", "1:10 - 1:45 (support)"],
+            "club_day" : ["1:45 - 2:30 (club)", "2:45 - 3:30 (club)"]
+        },
+        "regular": {
+            0 : [1,2,1,0,3,4],
+            1 : [3,4,2,0,1,2],
+            2 : [1,2,0,3,4],
+            3 : [1,2,3,0,4,3],
+            4 : [3,4,4,0,1,2]
+        },
+        "ib": {
+            0 : {
+                0 : [1,2,1,0,3,4],
+                1 : [3,4,2,0,1,2],
+                2 : [1,2,0,3,4],
+                3 : [5,6,3,0,7,4],
+                4 : [7,4,4,0,5,6]
+            },
+            1 : {
+                0 : [1,2,5,0,3,4],
+                1 : [3,4,6,0,1,2],
+                2 : [5,6,0,7,4],
+                3 : [5,6,7,0,7,4],
+                4 : [7,4,4,0,5,6]
+            }
+        },
+        "club" : {
+            3: [3,4],
+            4: [1,2]
+        }
+    }
+    userdata.change_block(0, "Lunch", "none")
+    d202098 = datetime.date(2020,9,7)
+    time = datetime.datetime.now()
+    date = time.date()
+    week_diff = math.floor((date - d202098).days / 7) % 2
+    weekday = time.weekday()
+    a_week = 0
+    b_week = 1
+    week_type = a_week if week_diff == 0 else b_week
+    day = time.day
+    month = time.month
+    club_day = is_club_day(day, month, True)
+    if userdata.ib:
+        schedule_template = schedules["ib"][week_type][weekday]
+    else:
+        schedule_template = schedules["regular"][weekday]
+    schedule = f""
+    for x in range(len(schedule_template)):
+        schedule += f"**{schedules['day_template'][weekday][x]}**: {'Block' if schedule_template[x] > 0 else ''} {schedule_template[x] if schedule_template[x] > 0 else ''}{' - ' if schedule_template[x] > 0 else ''}**[{userdata.get_block(schedule_template[x]).name}]({userdata.get_block(schedule_template[x]).link})**\n"
+    if club_day[0] > 0:
+        club_template = schedules["club"][club_day[1]]
+        for x in range(len(club_template)):
+            schedule += f"**{schedules['day_template']['club_day'][x]}**: Block {club_template[x]} Club - **[{userdata.get_block(schedule_template[x], True).name}]({userdata.get_block(schedule_template[x], True).link})**\m"
+    return schedule
+
 class MyClient(discord.Client): 
     async def on_ready(self):
         print('Schedulebot Up')
@@ -590,7 +664,11 @@ class MyClient(discord.Client):
                 listembed = discord.Embed(title = f"**Schedule for {message.author.nick if message.author.nick is not None else message.author.name}**", description = description)
             except AttributeError:
                 listembed = discord.Embed(title = f"**Schedule for {message.author.name}**", description = description)
-            await message.channel.send(embed=listembed)              
+            await message.channel.send(embed=listembed)
+        if "schedule" in themessage[0]:
+            schedule = display_schedule(message.author, userdata)
+            listembed = discord.Embed(title = f"**Schedule for {message.author.nick if message.author.nick is not None else message.author.name}**", description = schedule)
+            await message.channel.send(embed=listembed)
         if "now" in themessage[0]:
             period = nowfunction(ib)
             if period == "0":
