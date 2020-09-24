@@ -1,5 +1,3 @@
-@schedulebot create -1 name@[link] -2 name@[link] -3 name@[link] -4 name@[link]
-@schedulebot modify -[block] name@[link]
-@schedulebot delete 
-@schedulebot list
-@schedulebot now
+deprecated
+
+use @schedulebot info or @schedulebot help

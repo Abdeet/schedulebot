@@ -223,32 +223,127 @@ def nowfunction(ib):
     month = time.month
     club_day = is_club_day(day, month)
     period = '0'
-    if club_day:
-        if weekday == 3:
-            if hour == 13:
-                if minute > 35:
-                    period = "9"
-            elif hour == 14:
-                if minute <= 30:
-                    period = "9"
-                elif minute > 30:
-                    period = "10"
-            elif hour == 15:
-                if minute <= 30:
-                    period = "10"
-        if weekday == 3:
-            if hour == 13:
-                if minute > 35:
-                    period = "11"
-            elif hour == 14:
-                if minute <= 30:
-                    period = "11"
-                elif minute > 30:
-                    period = "12"
-            elif hour == 15:
-                if minute <= 30:
-                    period = "12"
-    elif int(ib):
+    if weekday == 0:
+        if hour == 8:
+            period = "1"
+        elif hour == 9:
+            if minute <= 50:
+                period = "1"
+            elif minute > 50:
+                period = "2"
+        elif hour == 10:
+            period = "2"
+        elif hour == 11:
+            if minute <= 20:
+                period = "2"
+            elif minute > 20:
+                period = "1"
+        elif hour == 12:
+            if minute == 0:
+                period = "1"
+            elif minute > 20:
+                period = "3"
+        elif hour == 13:
+            if minute <= 5:
+                period = "3"
+            elif minute > 5 and minute <= 45:
+                period = "4"
+    if weekday == 1:
+        if hour == 8:
+            period = "3"
+        elif hour == 9:
+            if minute <= 50:
+                period = "3"
+            elif minute > 50:
+                period = "4"
+        elif hour == 10:
+            period = "4"
+        elif hour == 11:
+            if minute <= 20:
+                period = "4"
+            elif minute > 20:
+                period = "2"
+        elif hour == 12:
+            if minute == 0:
+                period = "2"
+            elif minute > 20:
+                period = "1"
+        elif hour == 13:
+            if minute <= 5:
+                period = "1"
+            elif minute > 5 and minute <= 45:
+                period = "2"
+    if weekday == 3:
+        if hour == 8:
+            period = "1"
+        elif hour == 9:
+            if minute <= 50:
+                period = "1"
+            elif minute > 50:
+                period = "2"
+        elif hour == 10:
+            period = "2"
+        elif hour == 11:
+            if minute <= 20:
+                period = "2"
+            elif minute > 20:
+                period = "3"
+        elif hour == 12:
+            if minute == 0:
+                period = "3"
+            elif minute > 20:
+                period = "3"
+        elif hour == 13:
+            if minute <= 5:
+                period = "3"
+            elif minute > 5 and minute <= 45:
+                period = "4"
+    if weekday == 4:
+        if hour == 8:
+            period = "3"
+        elif hour == 9:
+            if minute <= 50:
+                period = "3"
+            elif minute > 50:
+                period = "4"
+        elif hour == 10:
+            period = "4"
+        elif hour == 11:
+            if minute <= 20:
+                period = "4"
+            elif minute > 20:
+                period = "4"
+        elif hour == 12:
+            if minute == 0:
+                period = "4"
+            elif minute > 20:
+                period = "1"
+        elif hour == 13:
+            if minute <= 5:
+                period = "1"
+            elif minute > 5 and minute <= 45:
+                period = "2"
+    if weekday == 2:
+        if hour == 9:
+            if minute > 50:
+                period = "1"
+        elif hour == 10:
+            if minute <= 35:
+                period = "1"
+            elif minute > 35:
+                period = "2"
+        elif hour == 11:
+            if minute <= 20:
+                period = "2"
+        elif hour == 12:
+            if minute > 20:
+                period = "3"
+        elif hour == 13:
+            if minute <= 5:
+                period = "3"
+            elif minute > 5 and minute <= 45:
+                period = "4"
+    if int(ib):
         if weekday == 0:
             if hour == 8:
                 period = "1"
@@ -414,127 +509,31 @@ def nowfunction(ib):
                         period = "7"
                     elif minute > 5 and minute <= 45:
                         period = "4"
-    else:
-        if weekday == 0:
-            if hour == 8:
-                period = "1"
-            elif hour == 9:
-                if minute <= 50:
-                    period = "1"
-                elif minute > 50:
-                    period = "2"
-            elif hour == 10:
-                period = "2"
-            elif hour == 11:
-                if minute <= 20:
-                    period = "2"
-                elif minute > 20:
-                    period = "1"
-            elif hour == 12:
-                if minute == 0:
-                    period = "1"
-                elif minute > 20:
-                    period = "3"
-            elif hour == 13:
-                if minute <= 5:
-                    period = "3"
-                elif minute > 5 and minute <= 45:
-                    period = "4"
-        if weekday == 1:
-            if hour == 8:
-                period = "3"
-            elif hour == 9:
-                if minute <= 50:
-                    period = "3"
-                elif minute > 50:
-                    period = "4"
-            elif hour == 10:
-                period = "4"
-            elif hour == 11:
-                if minute <= 20:
-                    period = "4"
-                elif minute > 20:
-                    period = "2"
-            elif hour == 12:
-                if minute == 0:
-                    period = "2"
-                elif minute > 20:
-                    period = "1"
-            elif hour == 13:
-                if minute <= 5:
-                    period = "1"
-                elif minute > 5 and minute <= 45:
-                    period = "2"
+    if club_day[0]:
         if weekday == 3:
-            if hour == 8:
-                period = "1"
-            elif hour == 9:
-                if minute <= 50:
-                    period = "1"
-                elif minute > 50:
-                    period = "2"
-            elif hour == 10:
-                period = "2"
-            elif hour == 11:
-                if minute <= 20:
-                    period = "2"
-                elif minute > 20:
-                    period = "3"
-            elif hour == 12:
-                if minute == 0:
-                    period = "3"
-                elif minute > 20:
-                    period = "3"
-            elif hour == 13:
-                if minute <= 5:
-                    period = "3"
-                elif minute > 5 and minute <= 45:
-                    period = "4"
-        if weekday == 4:
-            if hour == 8:
-                period = "3"
-            elif hour == 9:
-                if minute <= 50:
-                    period = "3"
-                elif minute > 50:
-                    period = "4"
-            elif hour == 10:
-                period = "4"
-            elif hour == 11:
-                if minute <= 20:
-                    period = "4"
-                elif minute > 20:
-                    period = "4"
-            elif hour == 12:
-                if minute == 0:
-                    period = "4"
-                elif minute > 20:
-                    period = "1"
-            elif hour == 13:
-                if minute <= 5:
-                    period = "1"
-                elif minute > 5 and minute <= 45:
-                    period = "2"
-        if weekday == 2:
-            if hour == 9:
-                if minute > 50:
-                    period = "1"
-            elif hour == 10:
-                if minute <= 35:
-                    period = "1"
-                elif minute > 35:
-                    period = "2"
-            elif hour == 11:
-                if minute <= 20:
-                    period = "2"
-            elif hour == 12:
-                if minute > 20:
-                    period = "3"
-            elif hour == 13:
-                if minute <= 5:
-                    period = "3"
-                elif minute > 5 and minute <= 45:
-                    period = "4"
+            if hour == 13:
+                if minute > 35:
+                    period = "9"
+            elif hour == 14:
+                if minute <= 30:
+                    period = "9"
+                elif minute > 30:
+                    period = "10"
+            elif hour == 15:
+                if minute <= 30:
+                    period = "10"
+        elif weekday == 4:
+            if hour == 13:
+                if minute > 35:
+                    period = "11"
+            elif hour == 14:
+                if minute <= 30:
+                    period = "11"
+                elif minute > 30:
+                    period = "12"
+            elif hour == 15:
+                if minute <= 30:
+                    period = "12"
     return period
 
 def display_schedule(user, userdata):
@@ -761,10 +760,10 @@ class MyClient(discord.Client):
             change_data(change_user_data(get_data(),userdata))
             await message.author.send("Your schedule has been changed! Check if it worked properly with @schedulebot list clubs and @schedulebot now club.")
         if "authorized data" in themessage[0]:
-            await message.channel.send("Sending data to authorized user, check your PMs.")
             if message.author.id == 333600742386565120:
+                await message.channel.send("Sending data to authorized user, check your PMs.")
                 for x in get_data(True):
-                    await message.author.send(f"```{json.dumps(x)}```")
+                    await message.author.send(f"```{json.dumps(x)}```")        
         if "info" in themessage[0] or "help" in themessage[0]:
             await message.channel.send("**Schedulebot by Abdeet**\n\nSchedulebot allows you to keep track of your classes and meeting links by doing all the remembering stuff for you.\n\nCommands:\n**`setup`** - Recommended for new users\n**`setup ib`** - Recommended for new ib users\n**`setup clubs`** - Setup your clubs\n**`change`** - Change parts of your schedule\n`create [-block name@link]` - Create a new schedule [discouraged, but still supported]\n`modify [-block name@link]` - Modify your schedule [discouraged, but still supported]\n**`delete`** - Delete your schedule\n**`list [clubs]`** - List your classes/clubs\n**`schedule`** - See your schedule for today\n**`now`** - Check what class you have now\n**`info`** or **`help`** - See all of the Schedulebot commands and how to use them\n`github` - Get the Github link for the code\n`invite` - Invite the bot to your server\nThe syntax to use these commands is `@schedulebot {command} [parameters if necessary]`\n\nThat's all there is to it and if you have a question or there is a bug message <@333600742386565120>")
         if "github" in themessage[0]:
