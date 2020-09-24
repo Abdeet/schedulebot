@@ -205,7 +205,7 @@ def load_prefix_data():
 def dump_prefix_data(data):
     prefixes = [json.dumps(x) for x in data]
     with open(FILE_PATH + "/prefix.txt", "w+") as prefixfile:
-        prefixfile.writelines(prefixes)
+        prefixfile.writelines("\n".join(prefixes))
 
 def get_prefix(data, server_id):
     for x in data:
@@ -808,7 +808,7 @@ class MyClient(discord.Client):
         if "invite" in themessage[0]:
             await message.channel.send("To invite Schedulebot to your channel use this link: https://discord.com/api/oauth2/authorize?client_id=749979907282436166&permissions=256000&scope=bot")
         if "prefix" in themessage[0]:
-            await message.channel.send(f"This server's command prefix is {server_prefix if server_prefix is not None else '[none set]'}. You can also use <@749979907282436166>")
+            await message.channel.send(f"This server's command prefix is `{server_prefix if server_prefix is not None else 'none set'}`. You can also use <@749979907282436166>")
             if message.author.guild_permissions.administrator:
                 def checkreply(m):
                     return m.author == message.author
