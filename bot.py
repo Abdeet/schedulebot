@@ -197,6 +197,37 @@ def convert_legacy_dict_to_object(legacy_dict):
     schedule = Schedule(legacy_dict['user'],classes)
     return schedule
 
+prefix_data = []
+
+def load_prefix_data():
+    with open(FILE_PATH + "/prefix.txt", "r+") as prefixfile:
+        prefixes = prefixfile.readlines()
+
+    return [json.loads(x) for x in prefixes]
+
+def dump_prefix_data(data):
+    prefixes = [json.dumps(x) for x in data]
+    with open(FILE_PATH + "/prefix.txt", "w+") as prefixfile:
+        prefixfile.writelines(prefixes)
+
+def get_prefix(data, server_id):
+    for x in data:
+        if x['server_id'] == server_id:
+            return x['prefix']
+    return None
+
+def change_prefix(data, server_id, prefix):
+    appended = False
+    for x in data:
+        if x['server_id'] == server_id:
+            x['prefix'] = prefix
+            appended = True
+    if appended == False:
+        data.append({'server_id': server_id, 'prefix': prefix})
+    dump_prefix_data(data)
+    prefix_data = load_prefix_data()
+    return prefix
+
 def is_club_day(day, month, which = False):
     club_days = {9: [24,25], 10: [22,23], 11: [19,20], 12: [17,18], 2: [26], 3: [26], 4: [23]}
     club_day = day in club_days[month]
@@ -599,14 +630,18 @@ def display_schedule(user, userdata):
             schedule += f"**{schedules['day_template']['club_day'][x]}**: Block {club_template[x]} Club - **[{userdata.get_block(club_template[x], True).name}]({userdata.get_block(club_template[x], True).link})**\n"
     return schedule
 
+
 class MyClient(discord.Client): 
     async def on_ready(self):
         print('Schedulebot Up')
         print(self.user.name)
         print(self.user.id)
         print('------')
+        prefix_data = load_prefix_data()
 
     async def on_message(self, message):
+        server_id = message.guild.id
+        server_prefix = get_prefix(prefix_data, server_id)
         messagecapitalization = message.content
         themessage = message.content.lower()
         if message.author.id == self.user.id:
@@ -627,8 +662,13 @@ class MyClient(discord.Client):
                     yes = True
                     break
             if not yes:
-                return
-        
+                if server_prefix is not None:
+                    if server_prefix in message.content:
+                        pass
+                    else: 
+                        return
+                else:
+                    return
         userdata = get_user_data(get_data(),message.author.id)
         ib = userdata.ib
         messagecapitalization = [x.strip() for x in messagecapitalization.replace("<@!749979907282436166>","").replace("<@749979907282436166>","").replace("<@&749979907282436166>","").split("-")]
@@ -765,11 +805,23 @@ class MyClient(discord.Client):
                 for x in get_data(True):
                     await message.author.send(f"```{json.dumps(x)}```")        
         if "info" in themessage[0] or "help" in themessage[0]:
-            await message.channel.send("**Schedulebot by Abdeet**\n\nSchedulebot allows you to keep track of your classes and meeting links by doing all the remembering stuff for you.\n\nCommands:\n**`setup`** - Recommended for new users\n**`setup ib`** - Recommended for new ib users\n**`setup clubs`** - Setup your clubs\n**`change`** - Change parts of your schedule\n`create [-block name@link]` - Create a new schedule [discouraged, but still supported]\n`modify [-block name@link]` - Modify your schedule [discouraged, but still supported]\n**`delete`** - Delete your schedule\n**`list [clubs]`** - List your classes/clubs\n**`schedule`** - See your schedule for today\n**`now`** - Check what class you have now\n**`info`** or **`help`** - See all of the Schedulebot commands and how to use them\n`github` - Get the Github link for the code\n`invite` - Invite the bot to your server\nThe syntax to use these commands is `@schedulebot {command} [parameters if necessary]`\n\nThat's all there is to it and if you have a question or there is a bug message <@333600742386565120>")
+            await message.channel.send("**Schedulebot by Abdeet**\n\nSchedulebot allows you to keep track of your classes and meeting links by doing all the remembering stuff for you.\n\nCommands:\n**`setup`** - Recommended for new users\n**`setup ib`** - Recommended for new ib users\n**`setup clubs`** - Setup your clubs\n**`change`** - Change parts of your schedule\n`create [-block name@link]` - Create a new schedule [discouraged, but still supported]\n`modify [-block name@link]` - Modify your schedule [discouraged, but still supported]\n**`delete`** - Delete your schedule\n**`list [clubs]`** - List your classes/clubs\n**`schedule`** - See your schedule for today\n**`now`** - Check what class you have now\n**`info`** or **`help`** - See all of the Schedulebot commands and how to use them\n`prefix` - View the server prefix [administrators can change the prefix]\n`github` - Get the Github link for the code\n`invite` - Invite the bot to your server\nThe syntax to use these commands is `@schedulebot {command} [parameters if necessary]`\n\nThat's all there is to it and if you have a question or there is a bug message <@333600742386565120>")
         if "github" in themessage[0]:
             await message.channel.send("Schedulebot has a GitHub repository!\nhttps://github.com/Abdeet/schedulebot")
         if "invite" in themessage[0]:
             await message.channel.send("To invite Schedulebot to your channel use this link: https://discord.com/api/oauth2/authorize?client_id=749979907282436166&permissions=256000&scope=bot")
+        if "prefix" in themessage[0]:
+            await message.channel.send(f"This server's command prefix is {server_prefix if server_prefix is not None else '[none set]'}. You can also use <@749979907282436166>")
+            if message.author.guild_permissions.administrator:
+                def checkreply(m):
+                    return m.author == message.author
+                await message.channel.send("Would you like to change the prefix? (y/n)")
+                msg = await client.wait_for('message', check = checkreply, timeout = 60.0)
+                if msg.content == "y":
+                    await message.channel.send("What do you want to change the prefix to?")
+                    msg = await client.wait_for('message', check = checkreply, timeout = 60.0)
+                    server_prefix = change_prefix(prefix_data, msg.guild.id, msg.content)
+                    await message.channel.send(f"Server prefix changed to {server_prefix}")
         """ if "meeting" in themessage[0]:
             custom_rooms = message.guild.get_channel(752942661018845273)
             people = message.mentions
