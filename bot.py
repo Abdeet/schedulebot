@@ -596,7 +596,7 @@ def display_schedule(user, userdata):
     if club_day[0] > 0:
         club_template = schedules["club"][club_day[1]]
         for x in range(len(club_template)):
-            schedule += f"**{schedules['day_template']['club_day'][x]}**: Block {club_template[x]} Club - **[{userdata.get_block(schedule_template[x], True).name}]({userdata.get_block(schedule_template[x], True).link})**\m"
+            schedule += f"**{schedules['day_template']['club_day'][x]}**: Block {club_template[x]} Club - **[{userdata.get_block(club_template[x], True).name}]({userdata.get_block(club_template[x], True).link})**\n"
     return schedule
 
 class MyClient(discord.Client): 
