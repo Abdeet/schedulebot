@@ -197,12 +197,9 @@ def convert_legacy_dict_to_object(legacy_dict):
     schedule = Schedule(legacy_dict['user'],classes)
     return schedule
 
-prefix_data = []
-
 def load_prefix_data():
     with open(FILE_PATH + "/prefix.txt", "r+") as prefixfile:
         prefixes = prefixfile.readlines()
-
     return [json.loads(x) for x in prefixes]
 
 def dump_prefix_data(data):
@@ -637,9 +634,9 @@ class MyClient(discord.Client):
         print(self.user.name)
         print(self.user.id)
         print('------')
-        prefix_data = load_prefix_data()
 
     async def on_message(self, message):
+        prefix_data = load_prefix_data()
         server_id = message.guild.id
         server_prefix = get_prefix(prefix_data, server_id)
         messagecapitalization = message.content
