@@ -33,13 +33,53 @@ import math
 }
 """
 
+SCHEDULES = {
+        "day_template" : {
+            0 : ["8:30 - 9:50", "10:00 - 11:20", "11:30 - 12:00 (check in)", "12:00 - 12:30", "12:30 - 1:05 (support)", "1:10 - 1:45 (support)"],
+            1 : ["8:30 - 9:50", "10:00 - 11:20", "11:30 - 12:00 (check in)", "12:00 - 12:30", "12:30 - 1:05 (support)", "1:10 - 1:45 (support)"],
+            2 : ["10:00 - 10:35", "10:40 - 11:15", "11:30 - 12:00", "12:00 - 12:30", "12:30 - 1:05", "1:10 - 1:45"],
+            3 : ["8:30 - 9:50", "10:00 - 11:20", "11:30 - 12:00 (check in)", "12:00 - 12:30", "12:30 - 1:05 (support)", "1:10 - 1:45 (support)"],
+            4 : ["8:30 - 9:50", "10:00 - 11:20", "11:30 - 12:00 (check in)", "12:00 - 12:30", "12:30 - 1:05 (support)", "1:10 - 1:45 (support)"],
+            "club_day" : ["1:45 - 2:30 (club)", "2:45 - 3:30 (club)"]
+        },
+        "regular": {
+            0 : [1,2,1,0,3,4],
+            1 : [3,4,2,0,1,2],
+            2 : [1,2,-1,0,3,4],
+            3 : [1,2,3,0,4,3],
+            4 : [3,4,4,0,1,2]
+        },
+        "ib": {
+            0 : {
+                0 : [1,2,1,0,3,4],
+                1 : [3,4,2,0,1,2],
+                2 : [1,2,-1,0,3,4],
+                3 : [5,6,3,0,7,4],
+                4 : [7,4,4,0,5,6]
+            },
+            1 : {
+                0 : [1,2,5,0,3,4],
+                1 : [3,4,6,0,1,2],
+                2 : [5,6,-1,0,7,4],
+                3 : [5,6,7,0,7,4],
+                4 : [7,4,4,0,5,6]
+            }
+        },
+        "club" : {
+            3: [3,4],
+            4: [1,2]
+        }
+}
 class Schedule:
-    def __init__(self,user,blocks, clubs = None):
+    def __init__(self,user,blocks, clubs = None, afterschool = None):
         self.user = int(user)
         self.blocks = blocks
         if clubs == None:
             self.clubs = [Block(1, "Nothing", "None"),Block(2, "Nothing", "None"),Block(3, "Nothing", "None"),Block(4, "Nothing", "None")]
         else: self.clubs = clubs
+        if afterschool == None:
+            self.afterschool = []
+        else: self.afterschool = afterschool
         self.update_ib()
 
     def update_ib(self):
@@ -54,30 +94,38 @@ class Schedule:
         for block in self.blocks:
             return_dict["blocks"].append(block.__dict__())
         for club in self.clubs:
-            return_dict["blocks"].append(block.__dict__())
+            return_dict["clubs"].append(club.__dict__())
+        for club in self.afterschool:
+            return_dict['afterschool'].append(club.__dict__())
         return return_dict
 
-    def get_block_index(self, num, club = False):
+    def get_block_index(self, num, club = False, afterschool = False):
         if club:
             for club in self.clubs:
                 if int(club.num) == int(num):
                     return self.clubs.index(club)
+        elif afterschool:
+            for club in self.afterschool:
+                if int(afterschool.num) == int(num):
+                    return self.afterschool.index(club)
         else:
             for block in self.blocks:
                 if int(block.num) == int(num):
                     return self.blocks.index(block)
         return None
 
-    def get_block(self, num, club = False):
-        index = self.get_block_index(int(num), club)
+    def get_block(self, num, club = False, afterschool = False):
+        index = self.get_block_index(int(num), club, afterschool)
         if index is not None:
             if club:
                 return self.clubs[index]
+            elif afterschool:
+                return self.afterschool[index]
             else:
                 return self.blocks[index]
         return None
 
-    def change_block(self, num, name, link, club = False):
+    def change_block(self, num, name, link, club = False, afterschool = False):
         index = self.get_block_index(num, club)
         if index is not None:
             if club:
@@ -85,6 +133,11 @@ class Schedule:
                 self.clubs[index].name = name
                 self.clubs[index].link = link
                 return self.clubs[index].__dict__()
+            elif afterschool:
+                self.afterschool[index].num = int(num)
+                self.afterschool[index].name = name
+                self.afterschool[index].link = link
+                return self.afterschool[index].__dict__()
             else:
                 self.blocks[index].num = int(num)
                 self.blocks[index].name = name
@@ -94,6 +147,9 @@ class Schedule:
             if club:
                 self.clubs.append(Block(num,name,link))
                 return self.clubs[-1].__dict__()
+            elif afterschool:
+                self.afterschool.append(Block(num,name,link))
+                return self.afterschool[-1].__dict__()
             else:
                 self.blocks.append(Block(num, name, link))
                 return self.clubs[-1].__dict__()
@@ -236,6 +292,21 @@ def is_club_day(day, month, which = False):
         elif day == club_days[month][1]:
             return (club_day, 4)
         else: return (club_day, 0)
+
+def get_dates(dateint):
+    dates = []
+    for x in range(4,-1,-1):
+        if dateint >= 2**x:
+            dates.append(x)
+            dateint -= 2**x
+    dates.reverse()
+    return dates
+
+def get_dateint(dates):
+    dateint = 0
+    for x in dates:
+        dateint += 2**x
+    return dateint
 
 def nowfunction(ib):
     d202098 = datetime.date(2020,9,7)
@@ -564,45 +635,32 @@ def nowfunction(ib):
                     period = "12"
     return period
 
+""" def nowfunction(ib):
+    d202098 = datetime.date(2020,9,7)
+    time = datetime.datetime.now()
+    hour = int(time.strftime("%H"))
+    minute = int(time.strftime("%M"))
+    date = time.date()
+    week_diff = math.floor((date - d202098).days / 7) % 2
+    weekday = time.weekday()
+    a_week = 0
+    b_week = 1
+    week_type = a_week if week_diff == 0 else b_week
+    day = time.day
+    month = time.month
+    club_day = is_club_day(day, month, True)
+    if ib:
+        schedule_template = SCHEDULES['ib'][week_type][weekday]
+    else:
+        schedule_template = SCHEDULES['regular'][week_type][weekday]
+    if club_day:
+        club_template = SCHEDULES['club']['weekday']
+    
+            
+    
+ """
 def display_schedule(user, userdata):
-    schedules = {
-        "day_template" : {
-            0 : ["8:30 - 9:50", "10:00 - 11:20", "11:30 - 12:00 (check in)", "12:00 - 12:30", "12:30 - 1:05 (support)", "1:10 - 1:45 (support)"],
-            1 : ["8:30 - 9:50", "10:00 - 11:20", "11:30 - 12:00 (check in)", "12:00 - 12:30", "12:30 - 1:05 (support)", "1:10 - 1:45 (support)"],
-            2 : ["10:00 - 10:35", "10:40 - 11:15", "12:00 - 12:30", "12:30 - 1:05", "1:10 - 1:45"],
-            3 : ["8:30 - 9:50", "10:00 - 11:20", "11:30 - 12:00 (check in)", "12:00 - 12:30", "12:30 - 1:05 (support)", "1:10 - 1:45 (support)"],
-            4 : ["8:30 - 9:50", "10:00 - 11:20", "11:30 - 12:00 (check in)", "12:00 - 12:30", "12:30 - 1:05 (support)", "1:10 - 1:45 (support)"],
-            "club_day" : ["1:45 - 2:30 (club)", "2:45 - 3:30 (club)"]
-        },
-        "regular": {
-            0 : [1,2,1,0,3,4],
-            1 : [3,4,2,0,1,2],
-            2 : [1,2,0,3,4],
-            3 : [1,2,3,0,4,3],
-            4 : [3,4,4,0,1,2]
-        },
-        "ib": {
-            0 : {
-                0 : [1,2,1,0,3,4],
-                1 : [3,4,2,0,1,2],
-                2 : [1,2,0,3,4],
-                3 : [5,6,3,0,7,4],
-                4 : [7,4,4,0,5,6]
-            },
-            1 : {
-                0 : [1,2,5,0,3,4],
-                1 : [3,4,6,0,1,2],
-                2 : [5,6,0,7,4],
-                3 : [5,6,7,0,7,4],
-                4 : [7,4,4,0,5,6]
-            }
-        },
-        "club" : {
-            3: [3,4],
-            4: [1,2]
-        }
-    }
-    userdata.change_block(0, "Lunch", "none")
+    userdata.change_block(0, "Lunch", "none") 
     d202098 = datetime.date(2020,9,7)
     time = datetime.datetime.now()
     date = time.date()
@@ -615,16 +673,16 @@ def display_schedule(user, userdata):
     month = time.month
     club_day = is_club_day(day, month, True)
     if userdata.ib:
-        schedule_template = schedules["ib"][week_type][weekday]
+        schedule_template = SCHEDULES["ib"][week_type][weekday]
     else:
-        schedule_template = schedules["regular"][weekday]
+        schedule_template = SCHEDULES["regular"][weekday]
     schedule = f""
     for x in range(len(schedule_template)):
-        schedule += f"**{schedules['day_template'][weekday][x]}**: {'Block' if schedule_template[x] > 0 else ''} {schedule_template[x] if schedule_template[x] > 0 else ''}{' - ' if schedule_template[x] > 0 else ''}**[{userdata.get_block(schedule_template[x]).name}]({userdata.get_block(schedule_template[x]).link})**\n"
+        schedule += f"**{SCHEDULES['day_template'][weekday][x]}**: {'Block' if schedule_template[x] > 0 else ''} {schedule_template[x] if schedule_template[x] > 0 else ''}{' - ' if schedule_template[x] > 0 else ''}**[{userdata.get_block(schedule_template[x]).name}]({userdata.get_block(schedule_template[x]).link})**\n"
     if club_day[0] > 0:
-        club_template = schedules["club"][club_day[1]]
+        club_template = SCHEDULES["club"][club_day[1]]
         for x in range(len(club_template)):
-            schedule += f"**{schedules['day_template']['club_day'][x]}**: Block {club_template[x]} Club - **[{userdata.get_block(club_template[x], True).name}]({userdata.get_block(club_template[x], True).link})**\n"
+            schedule += f"**{SCHEDULES['day_template']['club_day'][x]}**: Block {club_template[x]} Club - **[{userdata.get_block(club_template[x], True).name}]({userdata.get_block(club_template[x], True).link})**\n"
     return schedule
 
 
@@ -770,16 +828,17 @@ class MyClient(discord.Client):
             def checkreply(m):
                 return m.author == message.author ##and lowermessage == 'yes'
             while True:
-                await message.author.send("What block do you want to change? Example: `4`. If it is a club, write club in front. Example: `club 2`. You have two minutes to reply.")
+                await message.author.send("What block do you want to change? Example: `4`. If it is a club, write club in front. Example: `club 2`. If it is afterschool write `afterschool`. You have two minutes to reply.")
                 msg = await client.wait_for('message', check = checkreply, timeout=120.0)
                 club = "club" in msg.content
-                int_msg = msg.content.replace("club", "").strip()
+                afterschool = "afterschool" in msg.content
+                int_msg = msg.content.replace("club", "").replace("afterschool", "").strip()
                 try:
                     num = int(int_msg)
                 except:
                     num = None
                 if num is not None:
-                    block = userdata.get_block(num, club)
+                    block = userdata.get_block(num, club, afterschool)
                     if block:
                         await message.author.send(f"What do you want to change the name of {'club' if club else 'block'} {num} to? You have two minutes to reply.")
                         msg = await client.wait_for('message', check = checkreply, timeout=120.0)
@@ -796,6 +855,20 @@ class MyClient(discord.Client):
                             break
             change_data(change_user_data(get_data(),userdata))
             await message.author.send("Your schedule has been changed! Check if it worked properly with @schedulebot list clubs and @schedulebot now club.")
+        if "advisement" in themessage[0]:
+            await message.channel.send("Check your private messages for a message from me to continue setup. If you don't see one, make sure you have messages from strangers turned on in settings.")
+            def checkreply(m):
+                return m.author == message.author ##and lowermessage == 'yes'
+            await message.author.send("Welcome to the club schedule creator. Answer these questions to setup your club links.")
+            await message.author.send(f"Who is your advisement teacher?")
+            msg = await client.wait_for('message', check = checkreply, timeout = 120.0)
+            name = msg.content
+            await message.author.send(f"What is your advisement Meet link? Make sure this has the `https://` at the start. You have two minutes to reply.")
+            msg = await client.wait_for('message', check = checkreply, timeout = 120.0)
+            link = msg.content
+            userdata.change_block(-1, name, link)
+            change_data(change_user_data(get_data(),userdata))
+            await message.author.send("The setup is done! Check if it worked properly on Wednesdays with `schedule`")
         if "authorized data" in themessage[0]:
             if message.author.id == 333600742386565120:
                 await message.channel.send("Sending data to authorized user, check your PMs.")
