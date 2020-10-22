@@ -37,7 +37,7 @@ SCHEDULES = {
         "day_template" : {
             0 : ["8:30 - 9:50", "10:00 - 11:20", "11:30 - 12:00 (check in)", "12:00 - 12:30", "12:30 - 1:05 (support)", "1:10 - 1:45 (support)"],
             1 : ["8:30 - 9:50", "10:00 - 11:20", "11:30 - 12:00 (check in)", "12:00 - 12:30", "12:30 - 1:05 (support)", "1:10 - 1:45 (support)"],
-            2 : ["10:00 - 10:35", "10:40 - 11:15", "11:30 - 12:00", "12:00 - 12:30", "12:30 - 1:05", "1:10 - 1:45"],
+            2 : ["10:00 - 10:35", "10:40 - 11:15", "11:30 - 12:00 (advisement)", "12:00 - 12:30", "12:30 - 1:05", "1:10 - 1:45"],
             3 : ["8:30 - 9:50", "10:00 - 11:20", "11:30 - 12:00 (check in)", "12:00 - 12:30", "12:30 - 1:05 (support)", "1:10 - 1:45 (support)"],
             4 : ["8:30 - 9:50", "10:00 - 11:20", "11:30 - 12:00 (check in)", "12:00 - 12:30", "12:30 - 1:05 (support)", "1:10 - 1:45 (support)"],
             "club_day" : ["1:45 - 2:30 (club)", "2:45 - 3:30 (club)"]
@@ -83,7 +83,7 @@ class Schedule:
         self.update_ib()
 
     def update_ib(self):
-        if len(self.blocks) == 7:
+        if self.get_block_index(7) is not None:
             self.ib = 1
         else:
             self.ib = 0
@@ -672,7 +672,7 @@ def display_schedule(user, userdata):
     day = time.day
     month = time.month
     club_day = is_club_day(day, month, True)
-    if userdata.ib:
+    if userdata.ib == 1:
         schedule_template = SCHEDULES["ib"][week_type][weekday]
     else:
         schedule_template = SCHEDULES["regular"][weekday]
@@ -725,6 +725,7 @@ class MyClient(discord.Client):
                 else:
                     return
         userdata = get_user_data(get_data(),message.author.id)
+        for x in userdata.blocks:
         ib = userdata.ib
         messagecapitalization = [x.strip() for x in messagecapitalization.replace("<@!749979907282436166>","").replace("<@749979907282436166>","").replace("<@&749979907282436166>","").split("-")]
         themessage = [x.strip() for x in themessage.replace("<@!749979907282436166>","").replace("<@749979907282436166>","").replace("<@&749979907282436166>","").split("-")]
