@@ -725,7 +725,6 @@ class MyClient(discord.Client):
                 else:
                     return
         userdata = get_user_data(get_data(),message.author.id)
-        for x in userdata.blocks:
         ib = userdata.ib
         messagecapitalization = [x.strip() for x in messagecapitalization.replace("<@!749979907282436166>","").replace("<@749979907282436166>","").replace("<@&749979907282436166>","").split("-")]
         themessage = [x.strip() for x in themessage.replace("<@!749979907282436166>","").replace("<@749979907282436166>","").replace("<@&749979907282436166>","").split("-")]
