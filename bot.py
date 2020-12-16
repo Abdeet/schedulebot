@@ -668,7 +668,7 @@ def display_schedule(user, userdata):
     weekday = time.weekday()
     a_week = 0
     b_week = 1
-    week_type = a_week if week_diff == 0 else b_week
+    week_type = a_week if week_diff == 1 else b_week
     day = time.day
     month = time.month
     club_day = is_club_day(day, month, True)
