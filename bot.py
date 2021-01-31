@@ -504,7 +504,7 @@ class MyClient(discord.Client):
             await message.author.send("Welcome to the guided schedule creator. Just follow the steps and you will be done in no time.")
             await message.author.send("Are you in IB? (y/n)")
             ib = await client.wait_for('message', check = checkreply, timeout = 120.0)
-            if ib.lower() == "y":
+            if ib.content.lower() == "y":
                 userdata = create_empty_object(userdata.user,True)
             else:
                 userdata = create_empty_object(userdata.user)
