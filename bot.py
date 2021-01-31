@@ -431,7 +431,6 @@ def convert_dict_to_object(dict):
 
 def convert_object_to_dict(schedule):
     new_dict = schedule.__dict__()
-    print(new_dict)
     return new_dict
 
 def load_prefix_data():
@@ -526,15 +525,15 @@ class MyClient(discord.Client):
                     link = msg.content
                     userdata.change_block(x,name,link)
             change_data(change_user_data(get_data(),userdata))
-            await message.author.send("The setup is done! Check if it worked properly with @schedulebot list and @schedulebot now.")
+            await message.author.send("The setup is done! Check if it worked properly with @schedulebot schedule and @schedulebot now.")
         
         if "now" in message_content[0].lower():
             await message.channel.send(embed = get_current_block(userdata))
             #await message.channel.send(embed = get_current_block(userdata, custom = datetime.datetime(2021,1,29,10,50)))
         
         if "schedule" in message_content[0].lower():
-            #await message.channel.send(embed = get_daily_schedule(userdata))
-            await message.channel.send(embed = get_daily_schedule(userdata, custom = datetime.datetime(2021,1,29)))      
+            await message.channel.send(embed = get_daily_schedule(userdata))
+            #await message.channel.send(embed = get_daily_schedule(userdata, custom = datetime.datetime(2021,1,29)))      
 
 client = MyClient()
 client.run(get_secret())
