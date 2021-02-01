@@ -327,13 +327,13 @@ class Schedule:
             return None
     
     def daily_schedule(self, custom = False):
-        #try:
-        ddhhmm = self.get_ddhhmm(custom)
-        week = self.get_week(custom)
-        day = self.schedule['schedule'][str(week)][str(int(ddhhmm[:2]))]
-        return day 
-        #except:
-           #return None
+        try:
+            ddhhmm = self.get_ddhhmm(custom)
+            week = self.get_week(custom)
+            day = self.schedule['schedule'][str(week)][str(int(ddhhmm[:2]))]
+            return day 
+        except:
+           return None
 
 class Block:
     def __init__(self,num, name, link):
