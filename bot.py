@@ -499,7 +499,7 @@ class MyClient(discord.Client):
             userdata = create_empty_object(userdata.user)
             await message.channel.send("Check your private messages for a message from me to continue setup. If you don't see one, make sure you have messages from strangers turned on in settings.")
             def checkreply(m):
-                return m.author == message.author ##and lowermessage == 'yes
+                return m.author == message.author and m.channel.id == message.author.dm_channel.id
             await message.author.send("Welcome to the guided schedule creator. Just follow the steps and you will be done in no time.")
             await message.author.send("Are you in IB? (y/n)")
             ib = await client.wait_for('message', check = checkreply, timeout = 120.0)
@@ -526,14 +526,79 @@ class MyClient(discord.Client):
                     userdata.change_block(x,name,link)
             change_data(change_user_data(get_data(),userdata))
             await message.author.send("The setup is done! Check if it worked properly with @schedulebot schedule and @schedulebot now.")
+            return
         
         if "now" in message_content[0].lower():
             await message.channel.send(embed = get_current_block(userdata))
             #await message.channel.send(embed = get_current_block(userdata, custom = datetime.datetime(2021,1,29,10,50)))
+            return
         
         if "schedule" in message_content[0].lower():
             await message.channel.send(embed = get_daily_schedule(userdata))
-            #await message.channel.send(embed = get_daily_schedule(userdata, custom = datetime.datetime(2021,1,29)))      
+            #await message.channel.send(embed = get_daily_schedule(userdata, custom = datetime.datetime(2021,1,29)))
+            return
+
+        if "prefix" in message_content[0].lower():
+            await message.channel.send(f"This server's command prefix is `{server_prefix if server_prefix is not None else 'none set'}`. You can also use <@749979907282436166>")
+            if message.author.guild_permissions.administrator:
+                def checkreply(m):
+                    return m.author == message.author and m.channel.id == message.channel.id
+                await message.channel.send("Would you like to change the prefix? (y/n)")
+                msg = await client.wait_for('message', check = checkreply, timeout = 60.0)
+                if msg.content.lower() == "y":
+                    await message.channel.send("What do you want to change the prefix to?")
+                    msg = await client.wait_for('message', check = checkreply, timeout = 60.0)
+                    server_prefix = change_prefix(prefix_data, msg.guild.id, msg.content)
+                    await message.channel.send(f"Server prefix changed to {server_prefix}")
+                    return
+                else:
+                    return
+                    
+        if "change" in message_content[0].lower():
+            await message.channel.send("Check your private messages for a message from me to change your block. If you don't see one, make sure you have messages from strangers turned on in settings.")
+            def checkreply(m):
+                return m.author == message.author and m.channel.id == message.author.dm_channel.id
+            await message.author.send("What block do you want to change? (99 for advisement)")
+            msg = await client.wait_for('message', check = checkreply, timeout = 120.0)
+            try:
+                block = userdata.get_block(msg.content)
+                if block is not None:
+                    await message.channel.send(f"Currently for block **{block.num}** you have **{block.name}@{block.link}** set")
+                    await message.channel.send(f"Would you like to change this block? (y/n)")
+                    confirm = await client.wait_for('message', check = checkreply, timeout = 120.0)
+                    if confirm.content.lower() == "y":
+                        await message.channel.send(f"Who do you want to change your block {block.num} teacher to?")
+                        name = await client.wait_for('message', check = checkreply, timeout = 120.0)
+                        await message.channel.send(f"What is your block {block.num} link?")
+                        link = await client.wait_for('message', check = checkreply, timeout = 120.0)
+                        userdata.change_block(block.num, name.content, link.content)
+                        change_data(change_user_data(get_data(),userdata))
+                        new_block = userdata.get_block(block.num)
+                        await message.channel.send(f"Changed block **{new_block.num}** to **{new_block.name}@{new_block.link}**")
+                        return
+                else:
+                    await message.channel.send(f"You currently do not have any teacher or link set for block {msg}. Would you like to set one? (y/n)")
+                    confirm = await client.wait_for('message', check = checkreply, timeout = 120.0)
+                    if confirm.content.lower() == "y":
+                        await message.channel.send(f"Who do you want to change your block {msg} teacher to?")
+                        name = await client.wait_for('message', check = checkreply, timeout = 120.0)
+                        await message.channel.send(f"What is your block {msg} link?")
+                        link = await client.wait_for('message', check = checkreply, timeout = 120.0)
+                        userdata.change_block(int(msg.content), name.content, link.content)
+                        change_data(change_user_data(get_data(),userdata))
+                        new_block = userdata.get_block(int(msg.content))
+                        await message.channel.send(f"Changed block **{new_block.num}** to **{new_block.name}@{new_block.link}**")
+                        return
+            except:
+                return
+
+        if "help" in message_content[0].lower() or "info" in message_content[0].lower():
+            await message.channel.send("**Schedulebot** was created by **Abdeet**\n\nCurrent commands are:\n`setup`: Set up your schedule\n`change`: Change a block\n`schedule`: View your daily schedule\n`now`: View your current class\n`info` or `help`: Does this\n\nTo report bugs or complain or give encouragement or propose improvements contact **Abdeet**.")
+            return
+        
+        if "love" in message_content[0].lower():
+            await message.channel.send("Schedulebot is in a dedicated relationship with No U Bot, who has been in a coma for over a year.")
+            return
 
 client = MyClient()
 client.run(get_secret())
