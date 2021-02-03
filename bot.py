@@ -14,7 +14,9 @@ import time
 import copy
 FILE_PATH = os.path.dirname(os.path.abspath( __file__ ))
 
-default_schedule = {
+""" default_schedule = {
+    "name": "Urbana High School Default Schedule",
+    "id": 0,
     "weeks": 1,
     "start_week": "20200907",
     "blocks": [1,2,3,4,99],
@@ -242,9 +244,9 @@ default_schedule = {
             ]
         }
     }
-}
+} """
 
-ib_schedule = default_schedule
+#ib_schedule = default_schedule
 
 class Schedule:
     def __init__(self, user, template, blocks,):
@@ -411,12 +413,6 @@ def change_data(changed_list):
         changed_list = [json.dumps(x) + "\n" for x in changed_list]
         data_txt.writelines(changed_list)
 
-def create_empty_object(user_mention, ib = False):
-    if not ib:
-        return Schedule(user_mention,default_schedule,[Block(0, '', 'nothing'),Block(99, 'Advisement', 'nothing'),Block(1, 'nothing', 'http://example.com'),Block(2, 'nothing', 'http://example.com'),Block(3, 'nothing', 'http://example.com'),Block(4, 'nothing', 'http://example.com'),Block(5, 'nothing', 'http://example.com'),Block(6, 'nothing', 'http://example.com'),Block(7, 'nothing', 'http://example.com')])
-    elif ib:
-        return Schedule(user_mention,ib_schedule,[Block(0, '', 'nothing'),Block(99, 'Advisement', 'nothing'),Block(1, 'nothing', 'http://example.com'),Block(2, 'nothing', 'http://example.com'),Block(3, 'nothing', 'http://example.com'),Block(4, 'nothing', 'http://example.com'),Block(5, 'nothing', 'http://example.com'),Block(6, 'nothing', 'http://example.com'),Block(7, 'nothing', 'http://example.com')])
-
 def get_mentioned_roles(message):
     roles = re.findall(r"<@&[0-9]+>",message)
     roles = [role.replace("!","").replace("&","").replace("@","").strip("<").strip(">") for role in roles]
@@ -438,6 +434,8 @@ def load_prefix_data():
         prefixes = prefixfile.readlines()
     return [json.loads(x) for x in prefixes]
 
+prefixes = load_prefix_data()
+
 def dump_prefix_data(data):
     prefixes = [json.dumps(x) for x in data]
     with open(FILE_PATH + "/prefix.txt", "w+") as prefixfile:
@@ -449,16 +447,56 @@ def get_prefix(data, server_id):
             return x['prefix']
     return None
 
-def change_prefix(data, server_id, prefix):
+def change_prefix(data, server_id, prefix, prefix_var = prefixes):
     appended = False
     for x in data:
         if x['server_id'] == server_id:
-            x['prefix'] = prefix
+            data[data.index(x)]['prefix'] = prefix
             appended = True
     if appended == False:
         data.append({'server_id': server_id, 'prefix': prefix})
     dump_prefix_data(data)
+    prefix_var = data
     return prefix
+
+def load_schedule_data():
+    with open(FILE_PATH + "/schedules.txt", "r+") as schedulefile:
+        schedules = schedulefile.readlines()
+    return [json.loads(x) for x in schedules]
+
+schedules = load_schedule_data()
+
+def dump_schedule_data(data):
+    schedules = [json.dumps(x) for x in data]
+    with open(FILE_PATH + "/schedules.txt", "w+") as schedulefile:
+        schedulefile.writelines("\n".join(schedules))
+
+def get_schedule(data, schedule_id):
+    for x in data:
+        if int(x['id']) == int(schedule_id):
+            return x
+    return None
+
+def change_schedule(data, schedule, schedule_var = schedules):
+    appended = False
+    for x in data:
+        if x['id'] == schedule['id']:
+            data[data.index(x)] = schedule
+            appended = True
+    if appended == False:
+        data.append(schedule)
+    dump_schedule_data(data)
+    schedule_var = data
+    return schedule
+
+def get_schedule_list(schedules):
+    return_string = ""
+    for x in schedules:
+        return_string += f"**{x['id']}**: *{x['name']}*\n"
+    return return_string
+
+def create_empty_object(user_mention, schedule_num = 0, schedule_var = schedules):
+        return Schedule(user_mention,get_schedule(schedule_var, schedule_num),[Block(0, '', 'nothing'),Block(99, 'Advisement', 'nothing'),Block(1, 'nothing', 'http://example.com'),Block(2, 'nothing', 'http://example.com'),Block(3, 'nothing', 'http://example.com'),Block(4, 'nothing', 'http://example.com'),Block(5, 'nothing', 'http://example.com'),Block(6, 'nothing', 'http://example.com'),Block(7, 'nothing', 'http://example.com')])
 
 class MyClient(discord.Client): 
     async def on_ready(self):
@@ -473,7 +511,7 @@ class MyClient(discord.Client):
             return
         try:
             server_id = message.guild.id
-            server_prefix = get_prefix(load_prefix_data(), server_id)
+            server_prefix = get_prefix(prefixes, server_id)
             mentions = [str(mention.id).replace("!","").replace("&","").replace("@","").strip("<").strip(">") for mention in message.mentions]
             roles = get_mentioned_roles(message.content)
             if str(self.user.id) not in mentions:
@@ -484,7 +522,7 @@ class MyClient(discord.Client):
                         yes = True
                         break
                 if not yes:
-                    if server_prefix is not None:
+                    if server_prefix is not None or "":
                         if server_prefix in message.content:
                             pass
                         else: 
@@ -501,12 +539,18 @@ class MyClient(discord.Client):
             def checkreply(m):
                 return m.author == message.author and m.channel.id == message.author.dm_channel.id
             await message.author.send("Welcome to the guided schedule creator. Just follow the steps and you will be done in no time.")
-            await message.author.send("Are you in IB? (y/n)")
-            ib = await client.wait_for('message', check = checkreply, timeout = 120.0)
-            if ib.content.lower() == "y":
-                userdata = create_empty_object(userdata.user,True)
-            else:
-                userdata = create_empty_object(userdata.user)
+            await message.author.send("What schedule do you want to use? Reply with the id of the schedule you want to use. Reply with \"list\" to see a list of schedules and their associated ids.")
+            schedule_choice = await client.wait_for('message', check = checkreply, timeout = 120.0)
+            if schedule_choice.content.lower() == "list":
+                await message.author.send(get_schedule_list(schedules))
+                await message.author.send("Which schedule do you want to use?")
+                schedule_choice = await client.wait_for('message', check = checkreply, timeout = 120.0)
+            try: 
+                schedule_choice  = int(schedule_choice.content)
+                userdata = create_empty_object(userdata.user, schedule_choice)
+            except:
+                await message.author.send("Something went wrong. Please try again.")
+                return
             for x in userdata.schedule["blocks"]:
                 if x is 99:
                     await message.author.send(f"Who do you have for advisement? You have two minutes to reply.")
