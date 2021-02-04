@@ -592,7 +592,7 @@ class MyClient(discord.Client):
                 if msg.content.lower() == "y":
                     await message.channel.send("What do you want to change the prefix to?")
                     msg = await client.wait_for('message', check = checkreply, timeout = 60.0)
-                    server_prefix = change_prefix(prefix_data, msg.guild.id, msg.content)
+                    server_prefix = change_prefix(prefixes, msg.guild.id, msg.content)
                     await message.channel.send(f"Server prefix changed to {server_prefix}")
                     return
                 else:
