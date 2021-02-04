@@ -653,4 +653,4 @@ class MyClient(discord.Client):
             return
 
 client = MyClient()
-client.run(get_secret())
+client.run(get_secret())    
