@@ -637,7 +637,7 @@ class MyClient(discord.Client):
                 return
 
         if "help" in message_content[0].lower() or "info" in message_content[0].lower():
-            await message.channel.send("**Schedulebot** was created by **Abdeet**\n\nCurrent command prefix is `server_prefix`\n\nCurrent commands are:\n`setup`: Set up your schedule\n`change`: Change a block\n`schedule`: View your daily schedule\n`now`: View your current class\n`info` or `help`: Does this\n\n`github`: View Github repo\n\n`invite`: Get Discord invite link\n\n**Command Structure**: `@Schedulebot [command]` or `[prefix] [command]`\n\nTo report bugs or complain or give encouragement or propose improvements contact **Abdeet**.")
+            await message.channel.send("**Schedulebot** was created by **Abdeet**\n\nCurrent command prefix is `{server_prefix}`\n\nCurrent commands are:\n`setup`: Set up your schedule\n`change`: Change a block\n`schedule`: View your daily schedule\n`now`: View your current class\n`info` or `help`: Does this\n`github`: View Github repo\n`invite`: Get Discord invite link\n\n**Command Structure**: `@Schedulebot [command]` or `[prefix] [command]`\n\nTo report bugs or complain or give encouragement or propose improvements contact **Abdeet**.")
             return
 
         if "github" in message_content[0].lower():
